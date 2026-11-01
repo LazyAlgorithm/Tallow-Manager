@@ -65,15 +65,16 @@ class EngineManagerUi : Component
 			if (mTask.Finished)
 			{
 				let success = mTask.Succeeded;
+				let completedToolchain = mTask.For == "toolchain";
 				mError.Clear();
 				if (!success) mTask.GetError(mError);
 				Find("message").visible = true;
-				Find("message").SetText(success ? "Engine installed successfully." : mError);
+				Find("message").SetText(success ? (completedToolchain ? "Build tools installed. Restart Tallow to use them." : "Engine installed successfully.") : mError);
 				Find("message").SetClass("messageok", success);
 				delete mTask;
 				mTask = null;
 				Find("progress").visible = false;
-				if (success)
+				if (success && !completedToolchain)
 				{
 					RefreshInstalled();
 					CheckReleases();
@@ -190,7 +191,7 @@ class EngineManagerUi : Component
 			});
 		mTask.Start();
 	}
-	void OnDialogCancel() { mDialog.visible = false; }
+	void OnDialogCancel() { mDialog.visible = false; mDialogTools = false; mMissingTools.Clear(); }
 	void OnDialogBackdrop() { }
 	void OnCancel() { mTask?.Cancel(); }
 	void OnShowSettings() { Find("settings").visible = true; Find("page").visible = false; }
