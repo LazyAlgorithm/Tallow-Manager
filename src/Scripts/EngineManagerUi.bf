@@ -345,7 +345,28 @@ class EngineManagerUi : Component
 		Find("settings").visible = false;
 		Find("page").visible = true;
 		let path = source.attributes.Get("path");
-		if (path.IsEmpty) return;
+		if (path.IsEmpty)
+		{
+			// Available releases use the same entry template as installed versions.
+			// Selecting one must clear the previous installation selection.
+			if (mRelease == null) return;
+			mSelectedPath.Clear();
+			mSelectedTag.Clear();
+			Find("title").SetText("Tallow Engine");
+			let label = scope String();
+			ShortVersion(mRelease.tag, label);
+			Find("factversion").SetText(label);
+			Find("factinstalled").SetText("Not installed");
+			Find("factbuild").SetText("Verified during installation");
+			Find("notes").SetText(mRelease.notes);
+			Find("primary").SetText("INSTALL VERSION");
+			Find("primary").visible = true;
+			Find("launchbutton").visible = false;
+			Find("folderbutton").visible = false;
+			Find("removebutton").visible = false;
+			Find("message").visible = false;
+			return;
+		}
 		mSelectedPath.Set(path);
 		mSelectedTag.Set(source.attributes.Get("tag"));
 		Find("title").SetText("Tallow Engine");
