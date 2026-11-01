@@ -59,6 +59,10 @@
           {
             "download": "https://github.com/LazyAlgorithm/Tallow/releases/download/v0.1.0-beta/beef-windows-x64.zip",
             "unpack": "{tools}"
+          },
+          {
+            "write": "{tools}/beef/bin/BeefConfig.toml",
+            "text": "Version = 1\nUnversionedLibDirs = [\"../BeefLibs\"]\n"
           }
         ],
         "linux": [
