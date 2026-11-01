@@ -1,0 +1,20 @@
+name: Preview legacy Manager releases
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    steps:
+      - name: List releases outside the 0.1.0 and showcase groups
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api --paginate "/repos/$GITHUB_REPOSITORY/releases?per_page=100" --jq '.[] | [.id, .tag_name] | @tsv' |
+          while IFS=$'\t' read -r id tag; do
+            case "${tag,,}" in
+              v0.1.0|0.1.0|v0.1.0-*|0.1.0-*|*showcase*) echo "KEEP $tag" ;;
+              *) echo "OLD RELEASE $id $tag" ;;
+            esac
+          done
