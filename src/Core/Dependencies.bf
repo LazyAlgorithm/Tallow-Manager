@@ -288,6 +288,25 @@ static class Dependencies
 		let log = scope String(Machine.DataFolder);
 		log.Append("/install.log");
 		Machine.AppendText(log, scope $"\n== {dependency.name}\n");
+#if BF_PLATFORM_WINDOWS
+		// Use exactly the same installer as the standalone engine. The script is
+		// copied from Tallow's source into the Manager release at packaging time.
+		if (dependency.id == "beef" || dependency.id == "python" || dependency.id == "microsoft-libraries")
+		{
+			let shared = scope String();
+			if (!Machine.SharedInstallerPath(shared))
+				return task.Fail("The shared toolchain installer is missing from the Manager package. Reinstall Manager from the latest release.");
+			let command = scope String("powershell.exe -NoProfile -ExecutionPolicy Bypass -File ");
+			Machine.Quote(shared, command);
+			task.SetStatus("Installing Tallow development tools (Beef, Python, Windows SDK)", -1);
+			let exitCode = Machine.Run(command, log);
+			if (exitCode != 0)
+				return task.Fail(scope $"Shared dependency installation failed (exit {exitCode}). Details: {log}");
+			if (!IsFound(dependency))
+				return task.Fail(scope $"{dependency.name} was installed but could not be verified. Details: {log}");
+			return true;
+		}
+#endif
 		for (let step in dependency.install)
 		{
 			if (task.Cancelled)
