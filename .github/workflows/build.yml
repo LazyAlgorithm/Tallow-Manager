@@ -215,6 +215,9 @@ jobs:
           cd tallow
           "$GITHUB_WORKSPACE/manager/.github/scripts/version.sh" > ../manager/src/Data/version.txt
           python tools/build_player.py ../manager --platform windows --output ../out/TallowManager-Windows
+          mkdir -p ../out/TallowManager-Windows/tools
+          cp tools/setup_dependencies.ps1 ../out/TallowManager-Windows/tools/setup_dependencies.ps1
+          test -s ../out/TallowManager-Windows/tools/setup_dependencies.ps1
           cd ../out && rm -f TallowManager-Windows/log.txt && 7z a -tzip -mx=9 TallowManager-Windows.zip TallowManager-Windows > /dev/null
 
       - name: Keep the zip for a non-publishing build
