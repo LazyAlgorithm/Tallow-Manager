@@ -1,6 +1,6 @@
-name = TesseraManager
+name = TallowManager
 startScene = Scenes/EngineManager.tscene
-# Engine path is resolved by Tessera build tooling
+# Engine path is resolved by Tallow build tooling
 fullscreen = 0
 windowWidth = 1280
 windowHeight = 760
