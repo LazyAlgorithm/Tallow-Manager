@@ -79,7 +79,7 @@ class EngineManagerUi : Component
 				if (!managerCheck)
 				{
 					Find("message").visible = true;
-					Find("message").SetText(success ? (managerUpdate ? "Restarting Manager..." : completedToolchain ? "Build tools installed. Restart Tallow to use them." : "Engine installed successfully.") : mError);
+					Find("message").SetText(success ? (managerUpdate ? "Restarting Manager..." : completedToolchain ? "Build tools installed. Restart Tallow to use them." : "Engine and required development tools installed successfully.") : mError);
 					Find("message").SetClass("messageok", success);
 				}
 				delete mTask;
@@ -201,7 +201,7 @@ class EngineManagerUi : Component
 		mDialog.visible = true;
 		let shortTag = scope String();
 		ShortVersion(mRelease.tag, shortTag);
-		Find("dialogtext").SetText(scope $"Install Tallow {shortTag}? This will not replace other engine versions.");
+		Find("dialogtext").SetText(scope $"Install Tallow {shortTag} and its development tools? Windows may ask for administrator approval. This will not replace other engine versions.");
 	}
 
 	void OnDialogConfirm()
@@ -233,10 +233,21 @@ class EngineManagerUi : Component
 #else
 		let asset = new String("Tallow-Linux.zip");
 #endif
-		mTask = new Task("Installing Tallow", "engine", new [=](task) =>
+		mTask = new Task("Installing Tallow and development tools", "engine", new [=](task) =>
 			{
 				defer { delete selected; delete root; delete asset; }
-				return EngineInstall.Install(task, selected, asset, root);
+				if (!EngineInstall.Install(task, selected, asset, root)) return false;
+				let required = scope List<Catalog.Dependency>();
+				let item = Library.Catalog.FindItem("tallow");
+				if (item == null) return task.Fail("Installed engine, but toolchain requirements are missing from the catalog.");
+				Dependencies.Missing(Library.Catalog, item, required);
+				for (let dependency in required)
+				{
+					if (task.Cancelled) return task.Fail("Cancelled. Engine files were installed, but tool setup is incomplete.");
+					if (!Dependencies.IsFound(dependency) && !Dependencies.Install(dependency, task))
+						return false;
+				}
+				return true;
 			});
 		mTask.Start();
 	}
