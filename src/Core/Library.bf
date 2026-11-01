@@ -202,6 +202,15 @@ static class Library
 
 	// ---- looking things up ----
 
+	public static Installed FindInstalled(StringView id, StringView tag)
+	{
+		using (sLock.Enter())
+			for (let entry in InstalledItems)
+				if (entry.id == id && entry.tag == tag)
+					return entry;
+		return null;
+	}
+
 	public static Installed FindInstalled(StringView id)
 	{
 		using (sLock.Enter())
@@ -224,13 +233,19 @@ static class Library
 	{
 		let installed = FindInstalled(item.id);
 		let latest = LatestOf(item.id);
-		return installed != null && latest != null && latest.tag != installed.tag;
+		return installed != null && latest != null && FindInstalled(item.id, latest.tag) == null;
 	}
 
 	/// Where an item is installed: <Hub folder>/Games/<id>, or Engine/<id>.
-	public static void FolderFor(Catalog.Item item, String output)
+	public static void FolderFor(Catalog.Item item, StringView tag, String output)
 	{
 		output.AppendF("{}/{}/{}", Machine.DataFolder, item.kind == "engine" ? "Engine" : "Games", item.id);
+		if (item.kind == "engine")
+		{
+			output.Append('/');
+			for (let c in tag.RawChars)
+				output.Append((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '-' || c == '_' || c == '.' ? c : '_');
+		}
 	}
 
 	// ---- checking for updates ----
@@ -343,7 +358,7 @@ static class Library
 
 		// Unpacked beside the installed copy first, so a failure leaves that working.
 		let folder = scope String();
-		FolderFor(item, folder);
+		FolderFor(item, release.tag, folder);
 		let fresh = scope $"{folder}.new";
 		if (Directory.Exists(fresh))
 			Directory.DelTree(fresh).IgnoreError();
@@ -371,7 +386,7 @@ static class Library
 		{
 			var entry = (Installed)null;
 			for (let existing in InstalledItems)
-				if (existing.id == item.id)
+				if (existing.id == item.id && existing.tag == release.tag)
 					entry = existing;
 			if (entry == null)
 			{
@@ -389,9 +404,9 @@ static class Library
 		return true;
 	}
 
-	public static bool Uninstall(Catalog.Item item, String error)
+	public static bool Uninstall(Catalog.Item item, StringView tag, String error)
 	{
-		let installed = FindInstalled(item.id);
+		let installed = FindInstalled(item.id, tag);
 		if (installed == null)
 			return true;
 		if (Directory.Exists(installed.folder) && (Directory.DelTree(installed.folder) case .Err))
@@ -409,9 +424,9 @@ static class Library
 	}
 
 	/// Starts an installed item.
-	public static bool Launch(Catalog.Item item)
+	public static bool Launch(Catalog.Item item, StringView tag)
 	{
-		let installed = FindInstalled(item.id);
+		let installed = tag.IsEmpty ? FindInstalled(item.id) : FindInstalled(item.id, tag);
 		if (installed == null)
 			return false;
 		let program = scope $"{installed.folder}/{installed.run}";

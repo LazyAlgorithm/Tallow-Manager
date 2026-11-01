@@ -10,11 +10,12 @@ namespace TallowManager;
 class HubUi : Component
 {
 	UIDocument mDocument;
-	UIElement mGames, mEngines, mEntryTemplate, mToolTemplate;
+	UIElement mGames, mEngines, mEntryTemplate, mVersionTemplate, mToolTemplate;
 	UIElement mPage, mSettings, mDialog, mBody, mBanner;
 
 	/// The selected item's id; empty with Settings shown.
 	String mSelected = new .() ~ delete _;
+	String mSelectedEngineTag = new .() ~ delete _;
 	bool mShowSettings;
 	/// One piece of work at a time.
 	Task mTask ~ delete _;
@@ -59,6 +60,7 @@ class HubUi : Component
 		mGames = mDocument.Find("games");
 		mEngines = mDocument.Find("engines");
 		mEntryTemplate = mDocument.Find("entrytemplate");
+		mVersionTemplate = mDocument.Find("versiontemplate");
 		mToolTemplate = mDocument.Find("tooltemplate");
 		mPage = mDocument.Find("page");
 		mSettings = mDocument.Find("settings");
@@ -190,6 +192,7 @@ class HubUi : Component
 
 	void Select(StringView id)
 	{
+		if (mSelected != id) mSelectedEngineTag.Clear();
 		mSelected.Set(id);
 		mShowSettings = false;
 		if (mMessageFor != id)
@@ -206,6 +209,21 @@ class HubUi : Component
 			output.AppendF("{0:0} MB", Math.Max(bytes / (1024.0 * 1024), 1));
 	}
 
+	/// Friendly release label; the full immutable tag stays in the install state.
+	static void DisplayReleaseTag(StringView tag, String output)
+	{
+		var display = tag;
+		if (display.StartsWith("build-"))
+			display = display.Substring(6);
+		if (display.Length > 24)
+		{
+			output.Append(display.Substring(0, 21));
+			output.Append("...");
+		}
+		else
+			output.Append(display);
+	}
+
 	void RefreshPage()
 	{
 		let item = Selected;
@@ -215,8 +233,14 @@ class HubUi : Component
 			return;
 		}
 		mBody.visible = true;
-		let installed = Library.FindInstalled(item.id);
 		let latest = Library.LatestOf(item.id);
+		if (item.kind == "engine" && mSelectedEngineTag.IsEmpty)
+		{
+			let first = Library.FindInstalled(item.id);
+			if (first != null) mSelectedEngineTag.Set(first.tag);
+		}
+		let installed = item.kind == "engine" ? Library.FindInstalled(item.id, mSelectedEngineTag) : Library.FindInstalled(item.id);
+		let latestInstalled = latest != null ? Library.FindInstalled(item.id, latest.tag) : null;
 		let working = Busy && mTask.For == item.id;
 		StringView accent = item.accent.IsEmpty ? (StringView)"#4cc3f0" : item.accent;
 
@@ -249,7 +273,7 @@ class HubUi : Component
 			enabled = false;
 		}
 		else if (installed != null)
-			primary.SetText(item.kind == "engine" ? "OPEN" : "PLAY");
+			primary.SetText(item.kind == "engine" ? "LAUNCH ENGINE" : "PLAY");
 		else if (latest == null)
 		{
 			primary.SetText(Library.LatestErrors.ContainsKeyAlt(item.id) ? "NO RELEASE YET" : "CHECKING");
@@ -261,7 +285,27 @@ class HubUi : Component
 		primary.SetStyle("color", enabled ? (StringView)"#07111b" : (StringView)"#7c8a9c");
 		primary.attributes.Set("disabled", enabled ? "" : "1");
 
-		Find("updatebutton").visible = installed != null && Library.HasUpdate(item) && !working;
+		Find("updatebutton").visible = item.kind != "engine" && installed != null && Library.HasUpdate(item) && !working;
+		Find("installlatest").visible = item.kind == "engine" && latest != null && latestInstalled == null && !working;
+		let versions = Find("installedversions");
+		versions.visible = item.kind == "engine";
+		Find("versionslabel").visible = item.kind == "engine";
+		Clear(versions);
+		if (item.kind == "engine")
+		{
+			for (let entry in Library.InstalledItems)
+			{
+				if (entry.id != item.id) continue;
+				let row = Stamp(mVersionTemplate, versions);
+				row.attributes.Set("tag", entry.tag);
+				row.attributes.Set("item", entry.id);
+				let label = scope String();
+				DisplayReleaseTag(entry.tag, label);
+				FindClass(row, "entryname").SetText(label);
+				FindClass(row, "entrystate").SetText(entry.tag == mSelectedEngineTag ? "Selected" : "Select to launch");
+				row.SetClass("selected", entry.tag == mSelectedEngineTag);
+			}
+		}
 		Find("folderbutton").visible = installed != null;
 		Find("removebutton").visible = installed != null && !working;
 
@@ -294,11 +338,17 @@ class HubUi : Component
 		if (installed == null)
 			installedText.Append("Not installed");
 		else
-			installedText.AppendF("{}{}", installed.tag, installed.beta ? "  (beta)" : "");
+			{
+			DisplayReleaseTag(installed.tag, installedText);
+			if (installed.beta) installedText.Append("  (beta)");
+		}
 		Find("factinstalled").SetText(installedText);
 		let latestText = scope String();
 		if (latest != null)
-			latestText.AppendF("{}{}", latest.tag, latest.beta ? "  (beta)" : "");
+			{
+			DisplayReleaseTag(latest.tag, latestText);
+			if (latest.beta) latestText.Append("  (beta)");
+		}
 		else if (Library.LatestErrors.TryGetAlt(item.id, ?, let error))
 			latestText.Append(error);
 		else
@@ -422,7 +472,14 @@ class HubUi : Component
 		mMessageGood = ok;
 		let item = Library.Catalog.FindItem(forId);
 		if (ok)
+		{
+			if (item != null && item.kind == "engine")
+			{
+				let latest = Library.LatestOf(item.id);
+				if (latest != null) mSelectedEngineTag.Set(latest.tag);
+			}
 			mMessage.Set(scope $"{item != null ? item.name : forId} is ready.");
+		}
 		else
 			mMessage.Set(error.IsEmpty ? scope $"{title} did not finish." : error);
 	}
@@ -469,7 +526,7 @@ class HubUi : Component
 		let item = Selected;
 		if (item == null || Busy || !item.Available)
 			return;
-		if (Library.FindInstalled(item.id) != null)
+		if ((item.kind == "engine" ? Library.FindInstalled(item.id, mSelectedEngineTag) : Library.FindInstalled(item.id)) != null)
 		{
 			mDialogTools.Clear();
 			Dependencies.Missing(Library.Catalog, item, mDialogTools);
@@ -480,7 +537,7 @@ class HubUi : Component
 				ShowDialog(item);
 				return;
 			}
-			if (!Library.Launch(item))
+			if (!Library.Launch(item, item.kind == "engine" ? (StringView)mSelectedEngineTag : (StringView)""))
 			{
 				mMessageFor.Set(item.id);
 				mMessageGood = false;
@@ -489,6 +546,18 @@ class HubUi : Component
 			return;
 		}
 		Install(item, false);
+	}
+
+	void OnSelectVersion(UIElement source)
+	{
+		mSelectedEngineTag.Set(source.attributes.Get("tag"));
+	}
+
+	void OnInstallLatest()
+	{
+		let item = Selected;
+		if (item != null && item.kind == "engine" && !Busy)
+			Install(item, false);
 	}
 
 	void OnUpdate()
@@ -561,7 +630,7 @@ class HubUi : Component
 						defer delete tools;
 						for (let tool in tools)
 							if (!Dependencies.Install(tool, task)) return false;
-						return Library.Launch(launchItem) || task.Fail("Tools are ready, but the installed program could not be started.");
+						return Library.Launch(launchItem, launchItem.kind == "engine" ? (StringView)mSelectedEngineTag : (StringView)"") || task.Fail("Tools are ready, but the installed program could not be started.");
 					}));
 			}
 		}
@@ -593,7 +662,7 @@ class HubUi : Component
 	void OnShowFolder()
 	{
 		let item = Selected;
-		let installed = item != null ? Library.FindInstalled(item.id) : null;
+		let installed = item != null ? (item.kind == "engine" ? Library.FindInstalled(item.id, mSelectedEngineTag) : Library.FindInstalled(item.id)) : null;
 		if (installed != null)
 			Machine.Open(installed.folder);
 	}
@@ -605,7 +674,11 @@ class HubUi : Component
 			return;
 		let error = scope String();
 		mMessageFor.Set(item.id);
-		mMessageGood = Library.Uninstall(item, error);
+		let installed = item.kind == "engine" ? Library.FindInstalled(item.id, mSelectedEngineTag) : Library.FindInstalled(item.id);
+		if (installed == null) return;
+		let tag = scope String(installed.tag);
+		mMessageGood = Library.Uninstall(item, tag, error);
+		if (mMessageGood && item.kind == "engine") mSelectedEngineTag.Clear();
 		mMessage.Set(mMessageGood ? scope $"{item.name} was removed." : error);
 	}
 
