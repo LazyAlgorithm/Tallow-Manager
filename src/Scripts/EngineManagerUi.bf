@@ -45,7 +45,7 @@ class EngineManagerUi : Component
 			Find("removebutton").visible = false;
 			Find("folderbutton").visible = false;
 			Find("primary").SetText("CHECK FOR RELEASES");
-			Find("summary").SetText("Install Tessera engine builds side by side. No Python required to download an engine.");
+			Find("summary").SetText("Install Tallow engine builds side by side. No Python required to download an engine.");
 			mReady = true;
 			CheckReleases();
 		}
@@ -86,7 +86,7 @@ class EngineManagerUi : Component
 		}
 		DeleteAndNullify!(mRelease);
 		mRelease = release;
-		Find("title").SetText(scope $"Tessera {release.tag}");
+		Find("title").SetText(scope $"Tallow {release.tag}");
 		Find("factversion").SetText(release.tag);
 		Find("factbuild").SetText("Verified during installation");
 		Find("notes").SetText(release.notes);
@@ -131,7 +131,7 @@ class EngineManagerUi : Component
 #else
 		let asset = new String("Tessera-Linux.zip");
 #endif
-		mTask = new Task("Installing Tessera", "engine", new [=](task) =>
+		mTask = new Task("Installing Tallow", "engine", new [=](task) =>
 			{
 				defer { delete selected; delete root; delete asset; }
 				return EngineInstall.Install(task, selected, asset, root);
