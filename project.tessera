@@ -1,6 +1,6 @@
-name = TesseraHub
+name = TesseraManager
 startScene = Scenes/EngineManager.tscene
-engine = /home/zerker24/BeefProjects/Tessera
+# Engine path is resolved by Tessera build tooling
 fullscreen = 0
 windowWidth = 1280
 windowHeight = 760
