@@ -36,6 +36,14 @@
 		<text class="entrybadge">BETA</text>
 	</panel>
 
+	<!-- Version selection rows have their own event handler. -->
+	<panel id="versiontemplate" class="entry" onclick="OnSelectVersion">
+		<panel class="entrytext">
+			<text class="entryname">Version</text>
+			<text class="entrystate">Select to launch</text>
+		</panel>
+	</panel>
+
 	<!-- The page of the selected item. -->
 	<panel id="page">
 		<image id="banner" src="UI/banner_tallow.png" />
@@ -49,6 +57,7 @@
 			<panel id="actions">
 				<button id="primary" onclick="OnPrimary">INSTALL</button>
 				<button id="updatebutton" class="secondary" onclick="OnUpdate">Update</button>
+				<button id="installlatest" class="secondary" onclick="OnInstallLatest">Install newest version</button>
 				<button id="folderbutton" class="secondary" onclick="OnShowFolder">Show Folder</button>
 				<button id="removebutton" class="secondary danger" onclick="OnUninstall">Uninstall</button>
 			</panel>
@@ -82,6 +91,8 @@
 				</panel>
 			</panel>
 
+			<text id="versionslabel" class="factlabel">INSTALLED ENGINE VERSIONS</text>
+			<panel id="installedversions" class="list" />
 			<text id="noteslabel" class="factlabel">WHAT'S NEW</text>
 			<text id="notes">Notes</text>
 		</panel>
