@@ -1,0 +1,86 @@
+<panel id="manager">
+	<panel id="sidebar">
+		<panel id="brand">
+			<image id="brandmark" src="UI/icon_tessera.png" />
+			<panel id="brandtext">
+				<text id="brandname">TESSERA</text>
+				<text id="brandsub">Engine Manager</text>
+			</panel>
+		</panel>
+		<text class="section">INSTALLED VERSIONS</text>
+		<panel id="installedversions" class="list" />
+		<text class="section">AVAILABLE RELEASES</text>
+		<panel id="availableversions" class="list" />
+		<panel class="grow" />
+		<panel id="settingsentry" class="navlink" onclick="OnShowSettings">
+			<text class="navlinktext">Settings</text>
+		</panel>
+		<text id="version" class="version">Tessera Engine Manager</text>
+	</panel>
+	<panel id="entrytemplate" class="entry" onclick="OnSelectVersion">
+		<image class="entryicon" src="UI/icon_tessera.png" />
+		<panel class="entrytext">
+			<text class="entryname">Engine version</text>
+			<text class="entrystate">Not installed</text>
+		</panel>
+		<text class="entrybadge">BETA</text>
+	</panel>
+	<panel id="page">
+		<image id="banner" src="UI/banner_tessera.png" />
+		<panel id="body">
+			<panel id="titlerow">
+				<text id="title">Tessera Engine</text>
+				<text id="badge" class="badge">VERSION</text>
+			</panel>
+			<text id="summary">Install multiple engine versions side by side. Your projects stay with their pinned engine builds.</text>
+			<panel id="actions">
+				<button id="primary" onclick="OnInstall">INSTALL VERSION</button>
+				<button id="launchbutton" class="secondary" onclick="OnLaunch">Launch Project Manager</button>
+				<button id="folderbutton" class="secondary" onclick="OnShowFolder">Show Folder</button>
+				<button id="removebutton" class="secondary danger" onclick="OnUninstall">Uninstall</button>
+			</panel>
+			<panel id="progress">
+				<panel id="progresshead">
+					<text id="progresstext">Preparing download</text>
+					<button id="cancelbutton" class="link" onclick="OnCancel">Cancel</button>
+				</panel>
+				<bar id="progressbar" />
+			</panel>
+			<text id="message" class="message">Status</text>
+			<panel id="facts">
+				<panel class="fact"><text class="factlabel">VERSION</text><text id="factversion" class="factvalue">-</text></panel>
+				<panel class="fact"><text class="factlabel">BUILD</text><text id="factbuild" class="factvalue">-</text></panel>
+				<panel class="fact"><text class="factlabel">INSTALLATION</text><text id="factinstalled" class="factvalue">-</text></panel>
+			</panel>
+			<text id="noteslabel" class="factlabel">RELEASE NOTES</text>
+			<text id="notes">Select a release to see details.</text>
+		</panel>
+	</panel>
+	<panel id="settings">
+		<text id="settingstitle">Engine Manager Settings</text>
+		<panel class="setting">
+			<panel class="settingtext">
+				<text class="settingname">Include beta releases</text>
+				<text class="settinghelp">Show pre-release versions. No engine is installed or updated without your approval.</text>
+			</panel>
+			<toggle id="betatoggle" onchange="OnBetas" />
+		</panel>
+		<panel class="setting">
+			<panel class="settingtext">
+				<text class="settingname">Installation directory</text>
+				<text id="folderpath" class="settinghelp">Engine versions folder</text>
+			</panel>
+			<button class="secondary" onclick="OnOpenInstallFolder">Open</button>
+		</panel>
+	</panel>
+	<panel id="dialog" onclick="OnDialogBackdrop">
+		<panel id="dialogcard">
+			<text id="dialogtitle">Confirm installation</text>
+			<text id="dialogtext">Engine versions are installed side by side and never updated automatically.</text>
+			<panel id="dialogbuttons">
+				<button class="secondary" onclick="OnDialogCancel">Cancel</button>
+				<button id="dialogok" onclick="OnDialogConfirm">Confirm</button>
+			</panel>
+		</panel>
+	</panel>
+</panel>
