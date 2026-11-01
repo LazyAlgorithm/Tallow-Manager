@@ -14,6 +14,8 @@ class EngineManagerUi : Component
 	Task mTask ~ delete _;
 	String mError = new .() ~ delete _;
 	String mInstallPath = new .() ~ delete _;
+	String mSelectedPath = new .() ~ delete _;
+	String mSelectedTag = new .() ~ delete _;
 	bool mChecking;
 	bool mReady;
 
@@ -47,6 +49,7 @@ class EngineManagerUi : Component
 			Find("primary").SetText("CHECK FOR RELEASES");
 			Find("summary").SetText("Install Tallow engine builds side by side. No Python required to download an engine.");
 			mReady = true;
+			RefreshInstalled();
 			CheckReleases();
 		}
 		if (mTask != null)
@@ -67,6 +70,7 @@ class EngineManagerUi : Component
 				delete mTask;
 				mTask = null;
 				Find("progress").visible = false;
+				if (success) RefreshInstalled();
 			}
 		}
 	}
@@ -86,11 +90,14 @@ class EngineManagerUi : Component
 		}
 		DeleteAndNullify!(mRelease);
 		mRelease = release;
-		Find("title").SetText(scope $"Tallow {release.tag}");
-		Find("factversion").SetText(release.tag);
+		Find("title").SetText("Tallow Engine");
+		let shortTag = scope String();
+		ShortVersion(release.tag, shortTag);
+		Find("factversion").SetText(shortTag);
 		Find("factbuild").SetText("Verified during installation");
 		Find("notes").SetText(release.notes);
 		Find("primary").SetText("INSTALL VERSION");
+		Find("factinstalled").SetText("Not installed");
 		let entry = mTemplate.Clone();
 		entry.attributes.Remove("id");
 		entry.parent = mAvailable;
@@ -100,7 +107,7 @@ class EngineManagerUi : Component
 			if (!child.HasClass("entrytext")) continue;
 			for (let label in child.children)
 			{
-				if (label.HasClass("entryname")) label.SetText(release.tag);
+				if (label.HasClass("entryname")) label.SetText(shortTag);
 				if (label.HasClass("entrystate")) label.SetText("Available");
 			}
 		}
@@ -144,8 +151,113 @@ class EngineManagerUi : Component
 	void OnShowSettings() { Find("settings").visible = true; Find("page").visible = false; }
 	void OnOpenInstallFolder() { Machine.Open(mInstallPath); }
 	void OnBetas() { }
-	void OnSelectVersion(UIElement source) { }
-	void OnLaunch() { }
-	void OnShowFolder() { Machine.Open(mInstallPath); }
-	void OnUninstall() { }
+
+	static void ShortVersion(StringView tag, String output)
+	{
+		var value = tag;
+		if (value.StartsWith("build-")) value = value.Substring(6);
+		output.Append(value.Length > 12 ? value.Substring(0, 12) : value);
+	}
+
+	static void Clear(UIElement element)
+	{
+		ClearAndDeleteItems!(element.children);
+	}
+
+	void RefreshInstalled()
+	{
+		Clear(mInstalled);
+		let versions = scope $"{mInstallPath}/versions";
+		for (let versionDir in Directory.EnumerateDirectories(versions))
+		{
+			let versionPath = scope String();
+			versionDir.GetFilePath(versionPath);
+			for (let buildDir in Directory.EnumerateDirectories(versionPath))
+			{
+				let path = scope String();
+				buildDir.GetFilePath(path);
+				let manifestText = scope String();
+				if (File.ReadAllText(scope $"{path}/tallow-version.json", manifestText) case .Err) continue;
+				let manifest = SaveNode.FromText(manifestText);
+				if (manifest == null) continue;
+				let build = manifest["build"];
+				let version = manifest["version"];
+				if (build == null || build.kind != .String || version == null || version.kind != .String)
+				{
+					delete manifest;
+					continue;
+				}
+				let entry = mTemplate.Clone();
+				entry.attributes.Remove("id");
+				entry.attributes.Set("path", path);
+				entry.attributes.Set("tag", build.text);
+				entry.parent = mInstalled;
+				mInstalled.children.Add(entry);
+				for (let child in entry.children)
+				{
+					if (!child.HasClass("entrytext")) continue;
+					for (let label in child.children)
+					{
+						if (label.HasClass("entryname"))
+							label.SetText(scope $"Tallow {version.text} ({build.text.Substring(0, 7)})");
+						if (label.HasClass("entrystate")) label.SetText("Installed — select to launch");
+					}
+				}
+				delete manifest;
+			}
+		}
+	}
+
+	void OnSelectVersion(UIElement source)
+	{
+		let path = source.attributes.Get("path");
+		if (path.IsEmpty) return;
+		mSelectedPath.Set(path);
+		mSelectedTag.Set(source.attributes.Get("tag"));
+		Find("title").SetText("Tallow Engine");
+		let label = scope String();
+		ShortVersion(mSelectedTag, label);
+		Find("factversion").SetText(label);
+		Find("factinstalled").SetText("Installed");
+		Find("launchbutton").visible = true;
+		Find("launchbutton").SetText("LAUNCH ENGINE");
+		Find("folderbutton").visible = true;
+		Find("removebutton").visible = true;
+		Find("primary").visible = false;
+	}
+
+	void OnLaunch()
+	{
+		if (mSelectedPath.IsEmpty) return;
+#if BF_PLATFORM_WINDOWS
+		let program = scope $"{mSelectedPath}/Tallow.exe";
+#else
+		let program = scope $"{mSelectedPath}/Tallow";
+#endif
+		if (File.Exists(program))
+			Machine.Start(program);
+		else
+		{
+			Find("message").visible = true;
+			Find("message").SetText("Engine executable missing from installed version.");
+		}
+	}
+	void OnShowFolder() { Machine.Open(mSelectedPath.IsEmpty ? (StringView)mInstallPath : (StringView)mSelectedPath); }
+	void OnUninstall()
+	{
+		if (mTask != null || mSelectedPath.IsEmpty) return;
+		if (Directory.DelTree(mSelectedPath) case .Err)
+		{
+			Find("message").visible = true;
+			Find("message").SetText("Could not remove the engine. Close it and try again.");
+			return;
+		}
+		mSelectedPath.Clear();
+		mSelectedTag.Clear();
+		Find("launchbutton").visible = false;
+		Find("removebutton").visible = false;
+		Find("folderbutton").visible = false;
+		Find("primary").visible = true;
+		RefreshInstalled();
+	}
 }
