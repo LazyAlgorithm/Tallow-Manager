@@ -1,0 +1,40 @@
+# Use Tallow's published compiler built on Ubuntu 22.04, rather than rebuilding LLVM and Beef for every cold CI runner.
+name: Beef on Linux
+inputs:
+  beef-commit:
+    required: true
+  llvm-version:
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Install native build tools
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y --no-install-recommends build-essential ninja-build cmake zip xz-utils curl \
+          libx11-dev libxext-dev libxi-dev libxfixes-dev libxcursor-dev libxrandr-dev libxss-dev libxrender-dev \
+          libgl-dev libegl-dev libasound2-dev libpulse-dev libwayland-dev libxkbcommon-dev \
+          libtinfo5 libxml2 zlib1g-dev libzstd-dev
+
+    - name: Cache the published Beef compiler
+      id: beef-cache
+      uses: actions/cache@v4
+      with:
+        path: ~/beef
+        key: beef-toolchain-2-c3c90b0dc239-jammy
+
+    - name: Get the verified compiler
+      if: steps.beef-cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        curl --fail --location --retry 3 -o "$RUNNER_TEMP/beef.tar.gz" \
+          https://github.com/LazyAlgorithm/Tallow/releases/download/toolchain-2/beef-linux-x64.tar.gz
+        echo "c3c90b0dc239262c08ef88de61b00c896afe11219c08c97d8975884b4ed17131  $RUNNER_TEMP/beef.tar.gz" | sha256sum --check
+        tar -xzf "$RUNNER_TEMP/beef.tar.gz" -C "$HOME"
+
+    - name: Select the packaged compiler
+      shell: bash
+      run: |
+        test "${{ inputs.beef-commit }}" = b62833e327d6b08f3566b31102c57646de6916b0
+        echo "BEEFBUILD=$HOME/beef/IDE/dist/BeefBuild.sh" >> "$GITHUB_ENV"
