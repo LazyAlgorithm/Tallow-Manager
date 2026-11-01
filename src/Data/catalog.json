@@ -193,7 +193,7 @@
             "text": "Microsoft installer logs are stored in this folder.\n"
           },
           {
-            "runAsAdmin": "set \"TEMP={hub}/installer-logs\" && set \"TMP={hub}/installer-logs\" && \"{hub}/downloads/vs_BuildTools.exe\" --quiet --wait --norestart --nocache --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended"
+            "runAsAdmin": "\"{hub}/downloads/vs_BuildTools.exe\" --passive --wait --norestart --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended"
           },
           {
             "configureMicrosoft": "{tools}/beef/bin/BeefSettings.toml"
