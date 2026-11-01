@@ -3,7 +3,7 @@
 #
 # When it runs:
 #   - a version tag is pushed (git tag v1.0 && git push origin v1.0): a release named after the tag;
-#   - a push to `main`, `dev`, or `release`: a pre-release (a beta) named after the date and commit;
+#   - a push to main publishes a pre-release; dev builds are retained as artifacts;
 #   - by hand, from the Actions tab (Run workflow).
 #
 # The Hub is told which release it is (src/Data/version.txt, from .github/scripts/version.sh), so that it can tell
@@ -100,14 +100,14 @@ jobs:
           cd ../out && rm -f TallowManager-Linux/log.txt && zip -qr9 TallowManager-Linux.zip TallowManager-Linux
 
       - name: Keep the zip for a non-publishing build
-        if: github.event_name != 'push' && !inputs.publish
+        if: github.ref == 'refs/heads/dev' || (github.event_name != 'push' && !inputs.publish)
         uses: actions/upload-artifact@v4
         with:
           name: TallowManager-Linux
           path: out/TallowManager-Linux.zip
 
       - name: Stage the zip in a draft release
-        if: github.event_name == 'push' || inputs.publish
+        if: (github.event_name == 'push' && github.ref != 'refs/heads/dev') || inputs.publish
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -216,14 +216,14 @@ jobs:
           cd ../out && rm -f TallowManager-Windows/log.txt && 7z a -tzip -mx=9 TallowManager-Windows.zip TallowManager-Windows > /dev/null
 
       - name: Keep the zip for a non-publishing build
-        if: github.event_name != 'push' && !inputs.publish
+        if: github.ref == 'refs/heads/dev' || (github.event_name != 'push' && !inputs.publish)
         uses: actions/upload-artifact@v4
         with:
           name: TallowManager-Windows
           path: out/TallowManager-Windows.zip
 
       - name: Stage the zip in a draft release
-        if: github.event_name == 'push' || inputs.publish
+        if: (github.event_name == 'push' && github.ref != 'refs/heads/dev') || inputs.publish
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -236,7 +236,7 @@ jobs:
 
   release:
     needs: [linux, windows]
-    if: github.event_name == 'push' || inputs.publish
+    if: (github.event_name == 'push' && github.ref != 'refs/heads/dev') || inputs.publish
     runs-on: ubuntu-22.04
     steps:
       - name: Get the Hub
