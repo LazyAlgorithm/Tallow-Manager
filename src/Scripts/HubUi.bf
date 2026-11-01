@@ -10,7 +10,7 @@ namespace TallowManager;
 class HubUi : Component
 {
 	UIDocument mDocument;
-	UIElement mGames, mEngines, mEntryTemplate, mToolTemplate;
+	UIElement mGames, mEngines, mEntryTemplate, mVersionTemplate, mToolTemplate;
 	UIElement mPage, mSettings, mDialog, mBody, mBanner;
 
 	/// The selected item's id; empty with Settings shown.
@@ -60,6 +60,7 @@ class HubUi : Component
 		mGames = mDocument.Find("games");
 		mEngines = mDocument.Find("engines");
 		mEntryTemplate = mDocument.Find("entrytemplate");
+		mVersionTemplate = mDocument.Find("versiontemplate");
 		mToolTemplate = mDocument.Find("tooltemplate");
 		mPage = mDocument.Find("page");
 		mSettings = mDocument.Find("settings");
@@ -288,16 +289,16 @@ class HubUi : Component
 		Find("installlatest").visible = item.kind == "engine" && latest != null && latestInstalled == null && !working;
 		let versions = Find("installedversions");
 		versions.visible = item.kind == "engine";
+		Find("versionslabel").visible = item.kind == "engine";
 		Clear(versions);
 		if (item.kind == "engine")
 		{
 			for (let entry in Library.InstalledItems)
 			{
 				if (entry.id != item.id) continue;
-				let row = Stamp(mEntryTemplate, versions);
+				let row = Stamp(mVersionTemplate, versions);
 				row.attributes.Set("tag", entry.tag);
 				row.attributes.Set("item", entry.id);
-				row.attributes.Set("onclick", "OnSelectVersion");
 				let label = scope String();
 				DisplayReleaseTag(entry.tag, label);
 				FindClass(row, "entryname").SetText(label);
