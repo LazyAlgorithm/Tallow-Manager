@@ -6,5 +6,5 @@ if [ "${GITHUB_REF_TYPE:-}" = "tag" ]; then
 else
 	# The commit's date, not today's, so jobs that run either side of midnight agree.
 	dir="$(cd "$(dirname "$0")/../.." && pwd)"
-	echo "manager-$(git -C "$dir" log -1 --format=%cd --date=format:%Y%m%d)-$(git -C "$dir" rev-parse --short HEAD)"
+	echo "v0.0.1-beta.${GITHUB_RUN_NUMBER:-1}"
 fi
