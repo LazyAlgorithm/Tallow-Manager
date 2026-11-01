@@ -252,7 +252,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           tag="$(manager/.github/scripts/version.sh)"
-          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then title="Tallow Manager ${tag}"; pre=""; else title="Tallow Manager beta $(date -u +%Y-%m-%d) ($(git -C manager rev-parse --short HEAD))"; pre="--prerelease"; fi
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then title="Tallow Manager ${tag}"; pre=""; else title="Tallow Manager ${tag}"; pre="--prerelease"; fi
           mkdir -p out
           gh release download "$tag" --repo "$GITHUB_REPOSITORY" --pattern 'TallowManager-*.zip' --dir out
           test -s out/TallowManager-Windows.zip
