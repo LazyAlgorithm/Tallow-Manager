@@ -206,6 +206,21 @@ class HubUi : Component
 			output.AppendF("{0:0} MB", Math.Max(bytes / (1024.0 * 1024), 1));
 	}
 
+	/// Friendly release label; the full immutable tag stays in the install state.
+	static void DisplayReleaseTag(StringView tag, String output)
+	{
+		var display = tag;
+		if (display.StartsWith("build-"))
+			display = display.Substring(6);
+		if (display.Length > 24)
+		{
+			output.Append(display.Substring(0, 21));
+			output.Append("...");
+		}
+		else
+			output.Append(display);
+	}
+
 	void RefreshPage()
 	{
 		let item = Selected;
@@ -294,11 +309,17 @@ class HubUi : Component
 		if (installed == null)
 			installedText.Append("Not installed");
 		else
-			installedText.AppendF("{}{}", installed.tag, installed.beta ? "  (beta)" : "");
+			{
+			DisplayReleaseTag(installed.tag, installedText);
+			if (installed.beta) installedText.Append("  (beta)");
+		}
 		Find("factinstalled").SetText(installedText);
 		let latestText = scope String();
 		if (latest != null)
-			latestText.AppendF("{}{}", latest.tag, latest.beta ? "  (beta)" : "");
+			{
+			DisplayReleaseTag(latest.tag, latestText);
+			if (latest.beta) latestText.Append("  (beta)");
+		}
 		else if (Library.LatestErrors.TryGetAlt(item.id, ?, let error))
 			latestText.Append(error);
 		else
