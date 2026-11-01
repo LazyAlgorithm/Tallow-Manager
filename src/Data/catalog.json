@@ -8,7 +8,7 @@
       "beta": true,
       "summary": "Tallow engine and editor, installed side by side with project versions pinned.",
       "repo": "LazyAlgorithm/Tallow",
-      "tagPrefix": "build-",
+      "tagPrefix": "v",
       "assets": {
         "windows": "Tallow-Windows.zip",
         "linux": "Tallow-Linux.zip"
