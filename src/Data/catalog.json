@@ -37,21 +37,20 @@
       "size": "about 100 MB",
       "found": [
         {
-          "env": "BEEFBUILD"
-        },
-        {
-          "program": "BeefBuild"
-        },
-        {
-          "file": {
-            "windows": "{tools}/beef/bin/BeefBuild.exe",
-            "linux": "{tools}/beef/IDE/dist/BeefBuild.sh"
-          }
-        },
-        {
-          "file": {
-            "windows": "C:/Program Files/BeefLang/bin/BeefBuild.exe"
-          }
+          "all": [
+            {
+              "file": {
+                "windows": "{tools}/beef/bin/BeefBuild.exe",
+                "linux": "{tools}/beef/IDE/dist/BeefBuild.sh"
+              }
+            },
+            {
+              "file": {
+                "windows": "{tools}/beef/BeefLibs/corlib/BeefProj.toml",
+                "linux": "{tools}/beef/BeefLibs/corlib/BeefProj.toml"
+              }
+            }
+          ]
         }
       ],
       "install": {
