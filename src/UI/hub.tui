@@ -4,7 +4,7 @@
 		<panel id="brand">
 			<image id="brandmark" src="UI/icon_tessera.png" />
 			<panel id="brandtext">
-				<text id="brandname">TESSERA HUB</text>
+				<text id="brandname">TALLOW MANAGER</text>
 				<text id="brandsub">Games and the engine, kept up to date</text>
 			</panel>
 		</panel>
@@ -17,7 +17,7 @@
 		<panel class="grow" />
 
 		<panel id="hubupdate" class="hubupdate" onclick="OnUpdateHub">
-			<text class="hubupdatetitle">Tessera Hub update</text>
+			<text class="hubupdatetitle">Tallow Manager update</text>
 			<text id="hubupdatetext" class="hubupdatetext">A new version is ready. Click to install.</text>
 		</panel>
 		<panel id="settingsentry" class="navlink" onclick="OnShowSettings">
@@ -41,7 +41,7 @@
 		<image id="banner" src="UI/banner_tessera.png" />
 		<panel id="body">
 			<panel id="titlerow">
-				<text id="title">Tessera</text>
+				<text id="title">Tallow</text>
 				<text id="badge" class="badge">BETA</text>
 			</panel>
 			<text id="summary">Summary</text>
@@ -123,7 +123,7 @@
 	<!-- Asking before tools are installed. -->
 	<panel id="dialog" onclick="OnDialogBackdrop">
 		<panel id="dialogcard">
-			<text id="dialogtitle">Tessera needs some tools first</text>
+			<text id="dialogtitle">Tallow needs some tools first</text>
 			<text id="dialogtext">These are not on this computer yet. The Hub can download and set them up now.</text>
 			<panel id="dialoglist" />
 			<text id="dialogtotal" class="settinghelp">Total</text>
