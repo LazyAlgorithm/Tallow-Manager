@@ -42,7 +42,7 @@ jobs:
         # A failing step repeats the end of its output on the run's page (.github/scripts/step.sh).
         shell: bash manager/.github/scripts/step.sh {0}
     steps:
-      - name: Get the Hub
+      - name: Get the Manager
         uses: actions/checkout@v4
         with:
           path: manager
@@ -133,7 +133,7 @@ jobs:
         shell: pwsh
         run: git config --global core.autocrlf false
 
-      - name: Get the Hub
+      - name: Get the Manager
         uses: actions/checkout@v4
         with:
           path: manager
@@ -239,7 +239,7 @@ jobs:
     if: (github.event_name == 'push' && github.ref != 'refs/heads/dev') || inputs.publish
     runs-on: ubuntu-22.04
     steps:
-      - name: Get the Hub
+      - name: Get the Manager
         uses: actions/checkout@v4
         with:
           path: manager
@@ -249,17 +249,17 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           tag="$(manager/.github/scripts/version.sh)"
-          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then title="Tallow Manager ${tag}"; pre=""; else title="Tallow Manager beta $(date -u +%Y-%m-%d) ($(git -C hub rev-parse --short HEAD))"; pre="--prerelease"; fi
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then title="Tallow Manager ${tag}"; pre=""; else title="Tallow Manager beta $(date -u +%Y-%m-%d) ($(git -C manager rev-parse --short HEAD))"; pre="--prerelease"; fi
           mkdir -p out
           gh release download "$tag" --repo "$GITHUB_REPOSITORY" --pattern 'TallowManager-*.zip' --dir out
           test -s out/TallowManager-Windows.zip
           test -s out/TallowManager-Linux.zip
-          notes="Tallow Manager installs and updates games made with Tallow, and the engine itself.
+          notes="Tallow Manager installs verified Tallow engine builds side by side and manages projects.
 
           - **TallowManager-Windows.zip**: unzip and run TallowManager.exe. Needs a graphics driver with Vulkan.
           - **TallowManager-Linux.zip**: unzip and run TallowManager. Needs X11 or XWayland and a Vulkan or OpenGL driver.
 
-          Once installed, the Hub updates itself."
+          Engine installations require matching immutable build identities and SHA-256 checksums."
           (cd out && sha256sum *.zip > SHA256SUMS.txt && cat SHA256SUMS.txt)
           gh release upload "$tag" out/SHA256SUMS.txt --repo "$GITHUB_REPOSITORY" --clobber
           gh release edit "$tag" --draft=false --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "$title" --notes "$notes" $pre
