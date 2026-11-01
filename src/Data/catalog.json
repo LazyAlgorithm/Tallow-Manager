@@ -4,9 +4,9 @@
     {
       "id": "tessera",
       "kind": "engine",
-      "name": "Tessera",
+      "name": "Tallow",
       "beta": true,
-      "summary": "Tessera engine and editor, installed side by side with project versions pinned.",
+      "summary": "Tallow engine and editor, installed side by side with project versions pinned.",
       "repo": "LazyAlgorithm/Tessera",
       "tagPrefix": "build-",
       "assets": {
@@ -33,7 +33,7 @@
     {
       "id": "beef",
       "name": "Beef compiler",
-      "summary": "Compiles Tessera projects' scripts.",
+      "summary": "Compiles Tallow projects' scripts.",
       "size": "about 100 MB",
       "found": [
         {
@@ -72,7 +72,7 @@
     {
       "id": "python",
       "name": "Python 3.11 or later",
-      "summary": "Runs Tessera's build scripts. A copy only Tessera uses is installed.",
+      "summary": "Runs Tallow's build scripts. A copy only Tallow uses is installed.",
       "size": "about 50 MB",
       "found": [
         {
@@ -158,7 +158,7 @@
     {
       "id": "microsoft-libraries",
       "name": "Microsoft C++ Build Tools and Windows SDK",
-      "summary": "Registered Windows installations, usable by Tessera and other apps. Windows asks for administrator approval; setup runs quietly.",
+      "summary": "Registered Windows installations, usable by Tallow and other apps. Windows asks for administrator approval; setup runs quietly.",
       "size": "Several GB; existing installations are reused",
       "platforms": [
         "windows"
