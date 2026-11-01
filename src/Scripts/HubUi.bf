@@ -66,7 +66,7 @@ class HubUi : Component
 		mBody = mDocument.Find("body");
 		mBanner = mDocument.Find("banner");
 		mDialog.visible = false;
-		Find("version").SetText(scope $"Tessera Hub {Library.HubVersion}");
+		Find("version").SetText(scope $"Tallow Manager {Library.HubVersion}");
 		Find("folderpath").SetText(Machine.DataFolder);
 		Find("toolspath").SetText(Machine.ToolsFolder);
 		return mGames != null;
