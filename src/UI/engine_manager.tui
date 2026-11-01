@@ -1,7 +1,7 @@
 <panel id="manager">
 	<panel id="sidebar">
 		<panel id="brand">
-			<image id="brandmark" src="UI/icon_tessera.png" />
+			<text id="brandmark">T</text>
 			<panel id="brandtext">
 				<text id="brandname">TESSERA</text>
 				<text id="brandsub">Engine Manager</text>
@@ -18,7 +18,7 @@
 		<text id="version" class="version">Tessera Engine Manager</text>
 	</panel>
 	<panel id="entrytemplate" class="entry" onclick="OnSelectVersion">
-		<image class="entryicon" src="UI/icon_tessera.png" />
+		<text class="entryicon">T</text>
 		<panel class="entrytext">
 			<text class="entryname">Engine version</text>
 			<text class="entrystate">Not installed</text>
@@ -26,7 +26,6 @@
 		<text class="entrybadge">BETA</text>
 	</panel>
 	<panel id="page">
-		<image id="banner" src="UI/banner_tessera.png" />
 		<panel id="body">
 			<panel id="titlerow">
 				<text id="title">Tessera Engine</text>
