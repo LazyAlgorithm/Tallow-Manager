@@ -12,6 +12,23 @@ static class Machine
 #if BF_PLATFORM_WINDOWS
 	[CLink] static extern int32 _putenv_s(char8* name, char8* value);
 	[CLink] static extern uint32 GetLastError();
+	[CLink] static extern uint32 GetModuleFileNameA(void* module, char8* filename, uint32 capacity);
+
+	/// Find the shared Windows installer packaged alongside this executable.
+	public static bool SharedInstallerPath(String output)
+	{
+		char8[4096] path = .();
+		let count = GetModuleFileNameA(null, &path[0], 4096);
+		if (count == 0 || count >= 4096)
+			return false;
+		let executable = scope String(&path[0]);
+		let folder = scope String();
+		if (Path.GetDirectoryPath(executable, folder) case .Err)
+			return false;
+		output.Set(scope $"{folder}/tools/setup_dependencies.ps1");
+		return File.Exists(output);
+	}
+
 #else
 	[CLink] static extern int32 setenv(char8* name, char8* value, int32 overwrite);
 #endif
