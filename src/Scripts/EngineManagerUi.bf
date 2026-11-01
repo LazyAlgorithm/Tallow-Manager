@@ -23,6 +23,7 @@ class EngineManagerUi : Component
 	{
 		mInstallPath.Set(Machine.ToolsFolder);
 		mInstallPath.Append("/../engines");
+		Directory.CreateDirectory(scope $"{mInstallPath}/versions").IgnoreError();
 		Library.Load();
 	}
 
@@ -70,7 +71,11 @@ class EngineManagerUi : Component
 				delete mTask;
 				mTask = null;
 				Find("progress").visible = false;
-				if (success) RefreshInstalled();
+				if (success)
+				{
+					RefreshInstalled();
+					CheckReleases();
+				}
 			}
 		}
 	}
@@ -98,6 +103,18 @@ class EngineManagerUi : Component
 		Find("notes").SetText(release.notes);
 		Find("primary").SetText("INSTALL VERSION");
 		Find("factinstalled").SetText("Not installed");
+		Clear(mAvailable);
+		for (let installed in mInstalled.children)
+		{
+			let installedBuild = installed.attributes.Get("tag");
+			if (!installedBuild.IsEmpty && release.tag.Contains(installedBuild))
+			{
+				Find("primary").visible = false;
+				Find("factinstalled").SetText("Installed");
+				OnSelectVersion(installed);
+				return;
+			}
+		}
 		let entry = mTemplate.Clone();
 		entry.attributes.Remove("id");
 		entry.parent = mAvailable;
@@ -123,7 +140,9 @@ class EngineManagerUi : Component
 			return;
 		}
 		mDialog.visible = true;
-		Find("dialogtext").SetText(scope $"Install {mRelease.tag}? This will not replace other engine versions.");
+		let shortTag = scope String();
+		ShortVersion(mRelease.tag, shortTag);
+		Find("dialogtext").SetText(scope $"Install Tallow {shortTag}? This will not replace other engine versions.");
 	}
 
 	void OnDialogConfirm()
