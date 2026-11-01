@@ -1,24 +1,9 @@
-# Tallow rename plan (branch-only)
+# Tallow Manager rename (branch-only)
 
-Status: preparation; no rename merged to main.
+Work continues on `rename/tallow`; main is unchanged. No compatibility aliases or old-format readers are required.
 
-## Scope
-- Public brand: Tallow Engine, Tallow Editor, Tallow Manager.
-- Rename Tessera-owned Beef namespaces, symbols, project/build target names, binaries, UI labels, release assets, GitHub workflows, docs, site and bot branding.
-- Preserve existing project file extensions and serialized file formats. Existing projects are developer-owned and can be updated directly; no Tessera compatibility aliases required.
-- Avoid renaming third-party dependencies, historical attribution, and unrelated references.
+The Manager uses Tallow namespaces, serialized components, `project.tallow`, `tallow-version.json`, and Tallow release assets. Its source workspace expects the built engine in `../Tallow`. Catalog and artwork URLs point at this repository's rename branch rather than the game Hub's catalog. Update those URLs during the coordinated repository cutover.
 
-## Execution
-1. Inventory Tessera references and classify brand vs code vs format.
-2. Rename engine source and build configuration on rename/tallow.
-3. Update manager dependency, catalog, release lookup and UI on rename/tallow.
-4. Update CI/release workflows, docs, site, and Discord bot references.
-5. Build and smoke-test engine/editor/manager on supported platforms and test owned projects.
-6. Rename GitHub repositories only after review; update all cross-repo URLs and GitHub Pages.
-7. Merge only after explicit approval; do not change main during development.
+Linux Debug compilation and standalone player packaging pass. `python3 tools/test_engine_install.py` validates official ZIP folder layout, mandatory checksums, duplicate immutable installs, and staging cleanup against a local HTTP server.
 
-## Review gates
-- No references to Tessera remain except intentionally preserved format identifiers and historical text.
-- Project extensions unchanged.
-- Windows/Linux builds and installation/update paths validated.
-- No direct commits to main.
+Before merging: validate Windows installation and project launch, publish matching engine packages, coordinate repository URLs and release assets, and obtain explicit merge approval.

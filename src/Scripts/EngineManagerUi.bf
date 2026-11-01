@@ -73,7 +73,7 @@ class EngineManagerUi : Component
 
 	void CheckReleases()
 	{
-		let item = Library.Catalog.FindItem("tessera");
+		let item = Library.Catalog.FindItem("tallow");
 		if (item == null) return;
 		let release = new Release();
 		let error = scope String();

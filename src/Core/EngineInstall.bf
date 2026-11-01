@@ -20,8 +20,9 @@ static class EngineInstall
 		let staging = scope $"{versionsRoot}/.installing-{DateTime.Now.Ticks}";
 		let archive = scope $"{staging}/{assetName}";
 		let unpacked = scope $"{staging}/unpacked";
-		Directory.CreateDirectory(staging).IgnoreError();
-		defer Directory.Delete(staging, true).IgnoreError();
+		if (Directory.CreateDirectory(staging) case .Err)
+			return task.Fail("Could not create engine installation staging folder.");
+		defer { Directory.DelTree(staging).IgnoreError(); }
 
 		if (!task.Download(release.assetUrl, archive, "Downloading Tallow engine"))
 			return false;
@@ -31,10 +32,20 @@ static class EngineInstall
 		if (!task.Unpack(archive, unpacked, "Extracting Tallow engine"))
 			return false;
 
-		let manifestPath = scope $"{unpacked}/tessera-version.json";
+		// Official archives contain a platform folder; unpacking does not strip it.
+		let packageRoot = scope String(unpacked);
+		if (!File.Exists(scope $"{packageRoot}/tallow-version.json"))
+		{
+			let folder = scope String(assetName);
+			if (!folder.EndsWith(".zip"))
+				return task.Fail("Expected a Tallow engine ZIP archive.");
+			folder.RemoveToEnd(folder.Length - 4);
+			packageRoot.Set(scope $"{unpacked}/{folder}");
+		}
+		let manifestPath = scope $"{packageRoot}/tallow-version.json";
 		let manifestText = scope String();
 		if (File.ReadAllText(manifestPath, manifestText) case .Err)
-			return task.Fail("Engine package has no tessera-version.json.");
+			return task.Fail("Engine package has no tallow-version.json.");
 		let manifest = SaveNode.FromText(manifestText);
 		defer delete manifest;
 		if (manifest == null || manifest.kind != .Object)
@@ -54,15 +65,15 @@ static class EngineInstall
 		let destination = scope $"{versionsRoot}/versions/{version.text}/{build.text}";
 		if (Directory.Exists(destination))
 			return task.Fail("This exact engine build is already installed.");
-		if (!File.Exists(scope $"{unpacked}/tessera-version.json") ||
-			!Directory.Exists(scope $"{unpacked}/Engine") ||
-			!Directory.Exists(scope $"{unpacked}/Editor"))
+		if (!File.Exists(scope $"{packageRoot}/tallow-version.json") ||
+			!Directory.Exists(scope $"{packageRoot}/Engine") ||
+			!Directory.Exists(scope $"{packageRoot}/Editor"))
 			return task.Fail("Incomplete engine package.");
 		Directory.CreateDirectory(scope $"{versionsRoot}/versions/{version.text}").IgnoreError();
 		task.SetStatus("Installing verified engine version", -1);
 		if (task.Cancelled)
 			return task.Fail("Cancelled.");
-		if (Directory.Move(unpacked, destination) case .Err)
+		if (Directory.Move(packageRoot, destination) case .Err)
 			return task.Fail("Could not finalize engine installation.");
 		return true;
 	}

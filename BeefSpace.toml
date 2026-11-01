@@ -1,0 +1,4 @@
+FileVersion = 1
+Projects = {TallowManager = {Path = "."}, Tallow = {Path = "../Tallow/Engine"}}
+[Workspace]
+StartupProject = "TallowManager"

@@ -21,9 +21,9 @@ static class Library
 	}
 
 	/// Where the Hub's own releases are.
-	public const String HubRepo = "LazyAlgorithm/tessera-hub";
+	public const String HubRepo = "LazyAlgorithm/Tessera-Manager";
 	/// The catalog the Hub reads when it starts; the copy in its assets is used when this cannot be fetched.
-	public const String CatalogUrl = "https://raw.githubusercontent.com/LazyAlgorithm/tessera-hub/main/src/Data/catalog.json";
+	public const String CatalogUrl = "https://raw.githubusercontent.com/LazyAlgorithm/Tessera-Manager/rename/tallow/src/Data/catalog.json";
 
 	public static Catalog Catalog = new .() ~ delete _;
 	public static List<Installed> InstalledItems = new .() ~ DeleteContainerAndItems!(_);
@@ -97,7 +97,7 @@ static class Library
 		if (picture.StartsWith("https://"))
 			url.Set(picture);
 		else if (picture.StartsWith("UI/"))
-			url.AppendF("https://raw.githubusercontent.com/LazyAlgorithm/tessera-hub/main/src/{}", picture);
+			url.AppendF("https://raw.githubusercontent.com/LazyAlgorithm/Tessera-Manager/rename/tallow/src/{}", picture);
 		else
 		{
 			picture.Clear();

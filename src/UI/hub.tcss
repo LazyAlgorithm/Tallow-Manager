@@ -1,4 +1,4 @@
-/* Tessera Hub. Laid out for a window 760 points tall (the scene's UI Document reference height). */
+/* Tallow Hub. Laid out for a window 760 points tall (the scene's UI Document reference height). */
 
 #hub { position: absolute; left: 0; top: 0; width: 100%; height: 100%; background-color: #0c1018; color: #e8eef6 }
 

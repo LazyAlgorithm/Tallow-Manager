@@ -11,8 +11,8 @@ env exposure 1.0
 env shadowDistance 10
 object 1 parent 0 active 1 name "Engine Manager"
 transform 0 0 0 0 0 0 1 1 1 1
-component Tessera.Camera enabled 1
-component Tessera.UIDocument enabled 1
+component Tallow.Camera enabled 1
+component Tallow.UIDocument enabled 1
 field document "UI/engine_manager.tui"
 field referenceHeight 760
-component TesseraHub.EngineManagerUi enabled 1
+component TallowManager.EngineManagerUi enabled 1

@@ -1,6 +1,6 @@
 name = TallowManager
 startScene = Scenes/EngineManager.tscene
-# Engine path is resolved by Tallow build tooling
+engine = ../Tallow
 fullscreen = 0
 windowWidth = 1280
 windowHeight = 760

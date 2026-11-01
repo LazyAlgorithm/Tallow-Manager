@@ -2,7 +2,7 @@
   "version": 1,
   "items": [
     {
-      "id": "tessera",
+      "id": "tallow",
       "kind": "engine",
       "name": "Tallow",
       "beta": true,
@@ -10,12 +10,12 @@
       "repo": "LazyAlgorithm/Tessera",
       "tagPrefix": "build-",
       "assets": {
-        "windows": "Tessera-Windows.zip",
-        "linux": "Tessera-Linux.zip"
+        "windows": "Tallow-Windows.zip",
+        "linux": "Tallow-Linux.zip"
       },
       "run": {
-        "windows": "Tessera-Windows/Tessera.exe",
-        "linux": "Tessera-Linux/Tessera"
+        "windows": "Tallow-Windows/Tallow.exe",
+        "linux": "Tallow-Linux/Tallow"
       },
       "requires": [
         "beef",

@@ -3,7 +3,7 @@
 		<panel id="brand">
 			<text id="brandmark">T</text>
 			<panel id="brandtext">
-				<text id="brandname">TESSERA</text>
+				<text id="brandname">TALLOW</text>
 				<text id="brandsub">Engine Manager</text>
 			</panel>
 		</panel>
@@ -15,7 +15,7 @@
 		<panel id="settingsentry" class="navlink" onclick="OnShowSettings">
 			<text class="navlinktext">Settings</text>
 		</panel>
-		<text id="version" class="version">Tessera Engine Manager</text>
+		<text id="version" class="version">Tallow Engine Manager</text>
 	</panel>
 	<panel id="entrytemplate" class="entry" onclick="OnSelectVersion">
 		<text class="entryicon">T</text>
@@ -28,7 +28,7 @@
 	<panel id="page">
 		<panel id="body">
 			<panel id="titlerow">
-				<text id="title">Tessera Engine</text>
+				<text id="title">Tallow Engine</text>
 				<text id="badge" class="badge">VERSION</text>
 			</panel>
 			<text id="summary">Install multiple engine versions side by side. Your projects stay with their pinned engine builds.</text>

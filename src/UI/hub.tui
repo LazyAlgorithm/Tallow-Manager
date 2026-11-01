@@ -2,7 +2,7 @@
 	<!-- The list of games and the engine down the left. -->
 	<panel id="sidebar">
 		<panel id="brand">
-			<image id="brandmark" src="UI/icon_tessera.png" />
+			<image id="brandmark" src="UI/icon_tallow.png" />
 			<panel id="brandtext">
 				<text id="brandname">TALLOW MANAGER</text>
 				<text id="brandsub">Games and the engine, kept up to date</text>
@@ -28,7 +28,7 @@
 
 	<!-- One row of the list, copied for each item. -->
 	<panel id="entrytemplate" class="entry" onclick="OnSelect">
-		<image class="entryicon" src="UI/icon_tessera.png" />
+		<image class="entryicon" src="UI/icon_tallow.png" />
 		<panel class="entrytext">
 			<text class="entryname">Name</text>
 			<text class="entrystate">Not installed</text>
@@ -38,7 +38,7 @@
 
 	<!-- The page of the selected item. -->
 	<panel id="page">
-		<image id="banner" src="UI/banner_tessera.png" />
+		<image id="banner" src="UI/banner_tallow.png" />
 		<panel id="body">
 			<panel id="titlerow">
 				<text id="title">Tallow</text>
