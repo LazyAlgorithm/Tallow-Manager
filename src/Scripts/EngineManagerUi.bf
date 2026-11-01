@@ -52,6 +52,7 @@ class EngineManagerUi : Component
 			mReady = true;
 			RefreshInstalled();
 			CheckReleases();
+			CheckManagerUpdate();
 		}
 		if (mTask != null)
 		{
@@ -60,24 +61,68 @@ class EngineManagerUi : Component
 			mTask.GetStatus(status);
 			Find("progresstext").SetText(status);
 			if (mTask.Fraction >= 0) Find("progressbar").value = mTask.Fraction;
+
 			if (mTask.Finished)
 			{
 				let success = mTask.Succeeded;
+				let check = mTask.For == "manager-check";
+				let updating = mTask.For == "manager-update";
 				mError.Clear();
 				if (!success) mTask.GetError(mError);
-				Find("message").visible = true;
-				Find("message").SetText(success ? "Engine installed successfully." : mError);
-				Find("message").SetClass("messageok", success);
 				delete mTask;
 				mTask = null;
 				Find("progress").visible = false;
-				if (success)
+				if (check)
 				{
-					RefreshInstalled();
-					CheckReleases();
+					if (success) Library.Poll();
+					RefreshManagerUpdate();
+				}
+				else
+				{
+					Find("message").visible = true;
+					Find("message").SetText(success ? (updating ? "Restarting manager..." : "Engine installed successfully.") : mError);
+					Find("message").SetClass("messageok", success);
+					if (updating && success)
+					{
+						Library.RestartHub();
+						Application.Instance.Running = false;
+					}
+					else if (success)
+					{
+						RefreshInstalled();
+						CheckReleases();
+					}
 				}
 			}
 		}
+	}
+
+	void CheckManagerUpdate()
+	{
+		if (mTask != null) return;
+		mTask = new Task("Checking manager updates", "manager-check", new (task) => Library.Check(task));
+		mTask.Start();
+	}
+
+	void RefreshManagerUpdate()
+	{
+		let panel = Find("managerupdate");
+		panel.visible = Library.HubUpdate != null;
+		if (Library.HubUpdate != null)
+			Find("managerupdatetext").SetText(scope $"Manager {Library.HubUpdate.tag} is available. Update and restart.");
+	}
+
+	void OnUpdateManager()
+	{
+		if (mTask != null || Library.HubUpdate == null) return;
+		let release = new Release();
+		Library.HubUpdate.CopyTo(release);
+		mTask = new Task("Updating Tallow Manager", "manager-update", new [=](task) =>
+		{
+			defer delete release;
+			return Library.UpdateHub(release, task);
+		});
+		mTask.Start();
 	}
 
 	void CheckReleases()
