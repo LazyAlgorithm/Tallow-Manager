@@ -16,6 +16,8 @@ class EngineManagerUi : Component
 	String mInstallPath = new .() ~ delete _;
 	String mSelectedPath = new .() ~ delete _;
 	String mSelectedTag = new .() ~ delete _;
+	bool mDialogTools;
+	List<Catalog.Dependency> mMissingTools = new .() ~ delete _;
 	bool mChecking;
 	bool mReady;
 
@@ -63,15 +65,16 @@ class EngineManagerUi : Component
 			if (mTask.Finished)
 			{
 				let success = mTask.Succeeded;
+				let completedToolchain = mTask.For == "toolchain";
 				mError.Clear();
 				if (!success) mTask.GetError(mError);
 				Find("message").visible = true;
-				Find("message").SetText(success ? "Engine installed successfully." : mError);
+				Find("message").SetText(success ? (completedToolchain ? "Build tools installed. Restart Tallow to use them." : "Engine installed successfully.") : mError);
 				Find("message").SetClass("messageok", success);
 				delete mTask;
 				mTask = null;
 				Find("progress").visible = false;
-				if (success)
+				if (success && !completedToolchain)
 				{
 					RefreshInstalled();
 					CheckReleases();
@@ -102,6 +105,12 @@ class EngineManagerUi : Component
 		Find("factbuild").SetText("Verified during installation");
 		Find("notes").SetText(release.notes);
 		Find("primary").SetText("INSTALL VERSION");
+		Find("primary").visible = true;
+		Find("launchbutton").visible = false;
+		Find("folderbutton").visible = false;
+		Find("removebutton").visible = false;
+		mSelectedPath.Clear();
+		mSelectedTag.Clear();
 		Find("factinstalled").SetText("Not installed");
 		Clear(mAvailable);
 		for (let installed in mInstalled.children)
@@ -139,6 +148,7 @@ class EngineManagerUi : Component
 			Find("message").SetText("Release discovery is not yet connected. No files were changed.");
 			return;
 		}
+		mDialogTools = false;
 		mDialog.visible = true;
 		let shortTag = scope String();
 		ShortVersion(mRelease.tag, shortTag);
@@ -148,6 +158,23 @@ class EngineManagerUi : Component
 	void OnDialogConfirm()
 	{
 		mDialog.visible = false;
+		if (mDialogTools)
+		{
+			mDialogTools = false;
+			if (mTask != null) return;
+			let tools = new List<Catalog.Dependency>();
+			tools.AddRange(mMissingTools);
+			mMissingTools.Clear();
+			mTask = new Task("Installing build tools", "toolchain", new [=](task) =>
+			{
+				defer delete tools;
+				for (let dependency in tools)
+					if (!Dependencies.IsFound(dependency) && !Dependencies.Install(dependency, task)) return false;
+				return true;
+			});
+			mTask.Start();
+			return;
+		}
 		if (mRelease == null || mTask != null) return;
 		let selected = new Release();
 		mRelease.CopyTo(selected);
@@ -164,7 +191,7 @@ class EngineManagerUi : Component
 			});
 		mTask.Start();
 	}
-	void OnDialogCancel() { mDialog.visible = false; }
+	void OnDialogCancel() { mDialog.visible = false; mDialogTools = false; mMissingTools.Clear(); }
 	void OnDialogBackdrop() { }
 	void OnCancel() { mTask?.Cancel(); }
 	void OnShowSettings() { Find("settings").visible = true; Find("page").visible = false; }
@@ -218,7 +245,7 @@ class EngineManagerUi : Component
 					for (let label in child.children)
 					{
 						if (label.HasClass("entryname"))
-							label.SetText(scope $"Tallow {version.text} ({build.text.Substring(0, 7)})");
+							label.SetText(scope $"Tallow ({build.text.Substring(0, 7)})");
 						if (label.HasClass("entrystate")) label.SetText("Installed — select to launch");
 					}
 				}
@@ -254,7 +281,25 @@ class EngineManagerUi : Component
 		let program = scope $"{mSelectedPath}/Tallow";
 #endif
 		if (File.Exists(program))
+		{
 			Machine.Start(program);
+			mMissingTools.Clear();
+			let item = Library.Catalog.FindItem("tallow");
+			if (item != null) Dependencies.Missing(Library.Catalog, item, mMissingTools);
+			if (!mMissingTools.IsEmpty)
+			{
+				mDialogTools = true;
+				mDialog.visible = true;
+				Find("dialogtitle").SetText("Set up Tallow build tools");
+				let names = scope String();
+				for (let tool in mMissingTools)
+				{
+					if (!names.IsEmpty) names.Append(", ");
+					names.Append(tool.name);
+				}
+				Find("dialogtext").SetText(scope $"Tallow opened, but creating and building projects needs: {names}. Install these now? Administrator approval may be required.");
+			}
+		}
 		else
 		{
 			Find("message").visible = true;
@@ -278,5 +323,6 @@ class EngineManagerUi : Component
 		Find("folderbutton").visible = false;
 		Find("primary").visible = true;
 		RefreshInstalled();
+		CheckReleases();
 	}
 }
