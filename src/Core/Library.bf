@@ -426,7 +426,7 @@ static class Library
 	/// Starts an installed item.
 	public static bool Launch(Catalog.Item item, StringView tag)
 	{
-		let installed = FindInstalled(item.id, tag);
+		let installed = tag.IsEmpty ? FindInstalled(item.id) : FindInstalled(item.id, tag);
 		if (installed == null)
 			return false;
 		let program = scope $"{installed.folder}/{installed.run}";
