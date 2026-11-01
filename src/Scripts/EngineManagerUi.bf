@@ -27,6 +27,8 @@ class EngineManagerUi : Component
 		mInstallPath.Append("/../engines");
 		Directory.CreateDirectory(scope $"{mInstallPath}/versions").IgnoreError();
 		Library.Load();
+		Library.Betas = true;
+		Library.SaveState();
 	}
 
 	UIElement Find(StringView id) => mDocument.Find(id);
@@ -44,6 +46,7 @@ class EngineManagerUi : Component
 			mDialog.visible = false;
 			Find("settings").visible = false;
 			Find("folderpath").SetText(mInstallPath);
+			Find("betatoggle").value = 1;
 			Find("progress").visible = false;
 			Find("message").visible = false;
 			Find("launchbutton").visible = false;
@@ -241,7 +244,7 @@ class EngineManagerUi : Component
 	void OnCancel() { mTask?.Cancel(); }
 	void OnShowSettings() { Find("settings").visible = true; Find("page").visible = false; }
 	void OnOpenInstallFolder() { Machine.Open(mInstallPath); }
-	void OnBetas() { }
+	void OnBetas() { Library.Betas = true; Find("betatoggle").value = 1; Library.SaveState(); }
 
 	static void ShortVersion(StringView tag, String output)
 	{
