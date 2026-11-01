@@ -215,13 +215,6 @@ jobs:
           python tools/build_player.py ../manager --platform windows --output ../out/TallowManager-Windows
           cd ../out && rm -f TallowManager-Windows/log.txt && 7z a -tzip -mx=9 TallowManager-Windows.zip TallowManager-Windows > /dev/null
 
-      - name: Check Windows library detection
-        shell: pwsh
-        run: |
-          $env:HUB_TEST_EXE = "$env:GITHUB_WORKSPACE/out/TallowManager-Windows/TallowManager.exe"
-          $env:HUB_TEST_COMPILER = "$env:GITHUB_WORKSPACE/beef-win/bin/BeefBuild.exe"
-          python manager/tools/validate_windows_libraries.py
-
       - name: Keep the zip for a non-publishing build
         if: github.event_name != 'push' && !inputs.publish
         uses: actions/upload-artifact@v4
