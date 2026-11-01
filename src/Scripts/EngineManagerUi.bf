@@ -270,7 +270,12 @@ class EngineManagerUi : Component
 	void OnDialogCancel() { mDialog.visible = false; mDialogTools = false; mMissingTools.Clear(); }
 	void OnDialogBackdrop() { }
 	void OnCancel() { mTask?.Cancel(); }
-	void OnShowSettings() { Find("settings").visible = true; Find("page").visible = false; }
+	void OnShowSettings()
+	{
+		let settings = Find("settings");
+		settings.visible = !settings.visible;
+		Find("page").visible = !settings.visible;
+	}
 	void OnOpenInstallFolder() { Machine.Open(mInstallPath); }
 	void OnBetas() { Library.Betas = true; Find("betatoggle").value = 1; Library.SaveState(); }
 
@@ -337,6 +342,8 @@ class EngineManagerUi : Component
 
 	void OnSelectVersion(UIElement source)
 	{
+		Find("settings").visible = false;
+		Find("page").visible = true;
 		let path = source.attributes.Get("path");
 		if (path.IsEmpty) return;
 		mSelectedPath.Set(path);
