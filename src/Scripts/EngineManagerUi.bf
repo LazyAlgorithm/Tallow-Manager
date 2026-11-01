@@ -293,7 +293,11 @@ class EngineManagerUi : Component
 					for (let label in child.children)
 					{
 						if (label.HasClass("entryname"))
-							label.SetText(scope $"Tallow ({build.text.Substring(0, 7)})");
+							{
+							let visibleVersion = scope String();
+							ShortVersion(version.text, visibleVersion);
+							label.SetText(scope $"Tallow {visibleVersion}");
+						}
 						if (label.HasClass("entrystate")) label.SetText("Installed — select to launch");
 					}
 				}
