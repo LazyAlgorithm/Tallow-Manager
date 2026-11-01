@@ -95,8 +95,9 @@ class EngineManagerUi : Component
 					Library.RestartHub();
 					Application.Instance.Running = false;
 				}
-				else if (success && !completedToolchain)
+				else if (!completedToolchain && !managerUpdate)
 				{
+					// The engine archive may have been installed before dependency setup failed.
 					RefreshInstalled();
 					CheckReleases();
 				}
