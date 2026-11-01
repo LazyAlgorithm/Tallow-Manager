@@ -12,6 +12,10 @@
 		<text class="section">AVAILABLE RELEASES</text>
 		<panel id="availableversions" class="list" />
 		<panel class="grow" />
+		<panel id="managerupdate" class="hubupdate" onclick="OnUpdateManager">
+			<text class="hubupdatetitle">Tallow Manager update</text>
+			<text id="managerupdatetext" class="hubupdatetext">Update and restart</text>
+		</panel>
 		<panel id="settingsentry" class="navlink" onclick="OnShowSettings">
 			<text class="navlinktext">Settings</text>
 		</panel>
@@ -60,9 +64,9 @@
 		<panel class="setting">
 			<panel class="settingtext">
 				<text class="settingname">Include beta releases</text>
-				<text class="settinghelp">Show pre-release versions. No engine is installed or updated without your approval.</text>
+				<text class="settinghelp">Beta releases are always included during early access. Engine updates remain manual.</text>
 			</panel>
-			<toggle id="betatoggle" onchange="OnBetas" />
+			<toggle id="betatoggle" />
 		</panel>
 		<panel class="setting">
 			<panel class="settingtext">
