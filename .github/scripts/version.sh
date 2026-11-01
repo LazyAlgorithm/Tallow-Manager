@@ -1,10 +1,16 @@
 #!/usr/bin/env bash
-# The release tag this build is for: the pushed tag, or manager-<date>-<commit> for a beta. Written into the Manager
-# (src/Data/version.txt) and used as the release's tag, so the Manager knows which release it is.
-if [ "${GITHUB_REF_TYPE:-}" = "tag" ]; then
-	echo "$GITHUB_REF_NAME"
-else
-	# The commit's date, not today's, so jobs that run either side of midnight agree.
-	dir="$(cd "$(dirname "$0")/../.." && pwd)"
-	echo "manager-$(git -C "$dir" log -1 --format=%cd --date=format:%Y%m%d)-$(git -C "$dir" rev-parse --short HEAD)"
+# Stable tags use the pushed version; beta patches use first-parent release commits.
+# The baseline is the main commit before beta semantic versioning began.
+set -euo pipefail
+if [[ "${GITHUB_REF_TYPE:-}" == "tag" ]]; then
+  echo "$GITHUB_REF_NAME"
+  exit 0
 fi
+dir="$(cd "$(dirname "$0")/../.." && pwd)"
+baseline=eb4c3af7dbcfcac2db5a7ce76ff86156c11c0975
+commits="$(git -C "$dir" rev-list --first-parent --count "$baseline"..HEAD)"
+if (( commits < 1 )); then
+  echo "Unable to derive beta version from main history" >&2
+  exit 1
+fi
+echo "v0.1.$((commits - 1))-beta"

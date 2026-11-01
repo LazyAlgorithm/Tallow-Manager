@@ -27,6 +27,8 @@ class EngineManagerUi : Component
 		mInstallPath.Append("/../engines");
 		Directory.CreateDirectory(scope $"{mInstallPath}/versions").IgnoreError();
 		Library.Load();
+		Library.Betas = true;
+		Library.SaveState();
 	}
 
 	UIElement Find(StringView id) => mDocument.Find(id);
@@ -44,6 +46,7 @@ class EngineManagerUi : Component
 			mDialog.visible = false;
 			Find("settings").visible = false;
 			Find("folderpath").SetText(mInstallPath);
+			Find("betatoggle").value = 1;
 			Find("progress").visible = false;
 			Find("message").visible = false;
 			Find("launchbutton").visible = false;
@@ -54,6 +57,7 @@ class EngineManagerUi : Component
 			mReady = true;
 			RefreshInstalled();
 			CheckReleases();
+			CheckManagerUpdate();
 		}
 		if (mTask != null)
 		{
@@ -66,21 +70,65 @@ class EngineManagerUi : Component
 			{
 				let success = mTask.Succeeded;
 				let completedToolchain = mTask.For == "toolchain";
+				let managerCheck = mTask.For == "manager-check";
+				let managerUpdate = mTask.For == "manager-update";
 				mError.Clear();
 				if (!success) mTask.GetError(mError);
-				Find("message").visible = true;
-				Find("message").SetText(success ? (completedToolchain ? "Build tools installed. Restart Tallow to use them." : "Engine installed successfully.") : mError);
-				Find("message").SetClass("messageok", success);
+
+				if (!managerCheck)
+				{
+					Find("message").visible = true;
+					Find("message").SetText(success ? (managerUpdate ? "Restarting Manager..." : completedToolchain ? "Build tools installed. Restart Tallow to use them." : "Engine installed successfully.") : mError);
+					Find("message").SetClass("messageok", success);
+				}
 				delete mTask;
 				mTask = null;
 				Find("progress").visible = false;
-				if (success && !completedToolchain)
+				if (managerCheck)
+				{
+					if (success) Library.Poll();
+					RefreshManagerUpdate();
+				}
+				else if (managerUpdate && success)
+				{
+					Library.RestartHub();
+					Application.Instance.Running = false;
+				}
+				else if (success && !completedToolchain)
 				{
 					RefreshInstalled();
 					CheckReleases();
 				}
 			}
 		}
+	}
+
+	void CheckManagerUpdate()
+	{
+		if (mTask != null) return;
+		mTask = new Task("Checking Manager updates", "manager-check", new (task) => Library.Check(task));
+		mTask.Start();
+	}
+
+	void RefreshManagerUpdate()
+	{
+		let panel = Find("managerupdate");
+		panel.visible = Library.HubUpdate != null;
+		if (Library.HubUpdate != null)
+			Find("managerupdatetext").SetText(scope $"Manager {Library.HubUpdate.tag} is ready. Update and restart.");
+	}
+
+	void OnUpdateManager()
+	{
+		if (mTask != null || Library.HubUpdate == null) return;
+		let release = new Release();
+		Library.HubUpdate.CopyTo(release);
+		mTask = new Task("Updating Tallow Manager", "manager-update", new [=](task) =>
+		{
+			defer delete release;
+			return Library.UpdateHub(release, task);
+		});
+		mTask.Start();
 	}
 
 	void CheckReleases()
@@ -196,7 +244,7 @@ class EngineManagerUi : Component
 	void OnCancel() { mTask?.Cancel(); }
 	void OnShowSettings() { Find("settings").visible = true; Find("page").visible = false; }
 	void OnOpenInstallFolder() { Machine.Open(mInstallPath); }
-	void OnBetas() { }
+	void OnBetas() { Library.Betas = true; Find("betatoggle").value = 1; Library.SaveState(); }
 
 	static void ShortVersion(StringView tag, String output)
 	{
@@ -245,7 +293,11 @@ class EngineManagerUi : Component
 					for (let label in child.children)
 					{
 						if (label.HasClass("entryname"))
-							label.SetText(scope $"Tallow ({build.text.Substring(0, 7)})");
+							{
+							let visibleVersion = scope String();
+							ShortVersion(version.text, visibleVersion);
+							label.SetText(scope $"Tallow {visibleVersion}");
+						}
 						if (label.HasClass("entrystate")) label.SetText("Installed — select to launch");
 					}
 				}
