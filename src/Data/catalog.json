@@ -57,13 +57,13 @@
       "install": {
         "windows": [
           {
-            "download": "https://github.com/LazyAlgorithm/Tallow/releases/download/toolchain-2/beef-windows-x64.zip",
+            "download": "https://github.com/LazyAlgorithm/Tallow/releases/download/v0.1.0-beta/beef-windows-x64.zip",
             "unpack": "{tools}"
           }
         ],
         "linux": [
           {
-            "download": "https://github.com/LazyAlgorithm/Tallow/releases/download/toolchain-2/beef-linux-x64.tar.gz",
+            "download": "https://github.com/LazyAlgorithm/Tallow/releases/download/v0.1.0-beta/beef-linux-x64.tar.gz",
             "unpack": "{tools}"
           }
         ]
@@ -91,13 +91,13 @@
       "install": {
         "windows": [
           {
-            "download": "https://github.com/LazyAlgorithm/Tallow/releases/download/toolchain-2/python-windows-x64.zip",
+            "download": "https://github.com/LazyAlgorithm/Tallow/releases/download/v0.1.0-beta/python-windows-x64.zip",
             "unpack": "{tools}"
           }
         ],
         "linux": [
           {
-            "download": "https://github.com/LazyAlgorithm/Tallow/releases/download/toolchain-2/python-linux-x64.tar.gz",
+            "download": "https://github.com/LazyAlgorithm/Tallow/releases/download/v0.1.0-beta/python-linux-x64.tar.gz",
             "unpack": "{tools}"
           }
         ]
