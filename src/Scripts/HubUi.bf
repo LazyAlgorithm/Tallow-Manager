@@ -1,8 +1,8 @@
 using System;
 using System.Collections;
-using Tessera;
+using Tallow;
 
-namespace TesseraHub;
+namespace TallowManager;
 
 /// The Hub's window: the list of games and the engine, the selected one's page, settings, and asking before tools
 /// are installed. Drives UI/hub.tui; everything that does the work is in Core/.

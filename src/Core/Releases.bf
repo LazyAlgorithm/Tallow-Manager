@@ -1,9 +1,9 @@
 using System;
 using System.Collections;
 using System.IO;
-using Tessera;
+using Tallow;
 
-namespace TesseraHub;
+namespace TallowManager;
 
 /// One release of a game or the engine on GitHub, with the file for this platform.
 class Release

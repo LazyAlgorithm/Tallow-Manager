@@ -2,9 +2,9 @@ using System;
 using System.Collections;
 using System.IO;
 using System.Threading;
-using Tessera;
+using Tallow;
 
-namespace TesseraHub;
+namespace TallowManager;
 
 /// Work the Hub does on a thread of its own (installing, updating, setting up tools) while the window shows how far
 /// it has got. The work reports through SetStatus, and Download and Unpack report for it.

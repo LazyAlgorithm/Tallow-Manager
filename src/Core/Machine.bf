@@ -1,9 +1,9 @@
 using System;
 using System.Collections;
 using System.IO;
-using Tessera;
+using Tallow;
 
-namespace TesseraHub;
+namespace TallowManager;
 
 /// What the Hub needs from the operating system: its folders, finding and running programs, environment variables.
 static class Machine
@@ -45,14 +45,14 @@ static class Machine
 			if (sData.IsEmpty)
 			{
 				UserData(sData);
-				sData.Append("/Tessera Hub");
+				sData.Append("/Tallow Hub");
 				Directory.CreateDirectory(sData).IgnoreError();
 			}
 			return sData;
 		}
 	}
 
-	/// Where tools are installed: the folder the Tessera editor looks in for them (Tessera's Toolchain.Folder).
+	/// Where tools are installed: the folder the Tallow editor looks in for them (Tallow's Toolchain.Folder).
 	public static String ToolsFolder
 	{
 		get
@@ -62,7 +62,7 @@ static class Machine
 				// Isolated fixtures for the opt-in dependency diagnostic; ordinary launches use user data.
 				if (Application.Instance.HasArg("--dependencycheck") && Application.Instance.GetArg("--tools-folder", sTools) && !sTools.IsEmpty) return sTools;
 				UserData(sTools);
-				sTools.Append("/Tessera/toolchain");
+				sTools.Append("/Tallow/toolchain");
 				Directory.CreateDirectory(sTools).IgnoreError();
 			}
 			return sTools;

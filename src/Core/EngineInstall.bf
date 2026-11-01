@@ -1,8 +1,8 @@
 using System;
 using System.IO;
-using Tessera;
+using Tallow;
 
-namespace TesseraHub;
+namespace TallowManager;
 
 /// Native, side-by-side engine installation. No Python or existing engine required.
 /// Caller must choose a release explicitly; this class never performs auto-updates.
@@ -23,12 +23,12 @@ static class EngineInstall
 		Directory.CreateDirectory(staging).IgnoreError();
 		defer Directory.Delete(staging, true).IgnoreError();
 
-		if (!task.Download(release.assetUrl, archive, "Downloading Tessera engine"))
+		if (!task.Download(release.assetUrl, archive, "Downloading Tallow engine"))
 			return false;
 		let error = scope String();
 		if (!VerifyRequiredChecksum(release, archive, assetName, error))
 			return task.Fail(error);
-		if (!task.Unpack(archive, unpacked, "Extracting Tessera engine"))
+		if (!task.Unpack(archive, unpacked, "Extracting Tallow engine"))
 			return false;
 
 		let manifestPath = scope $"{unpacked}/tessera-version.json";
@@ -42,7 +42,7 @@ static class EngineInstall
 		let engine = manifest["engine"];
 		let version = manifest["version"];
 		let build = manifest["build"];
-		if (engine == null || engine.kind != .String || engine.text != "Tessera" ||
+		if (engine == null || engine.kind != .String || engine.text != "Tallow" ||
 			version == null || version.kind != .String ||
 			build == null || build.kind != .String ||
 			!SafeVersion(version.text) || !ValidCommit(build.text))

@@ -2,9 +2,9 @@ using System;
 using System.Collections;
 using System.IO;
 using System.Threading;
-using Tessera;
+using Tallow;
 
-namespace TesseraHub;
+namespace TallowManager;
 
 /// What is installed, what the newest releases are, and installing, updating, starting and removing.
 /// Everything here is used from the window's thread except the work inside a Task, which goes through the lock.
@@ -273,7 +273,7 @@ static class Library
 		{
 			let hubItem = scope Catalog.Item();
 			hubItem.repo.Set(HubRepo);
-			hubItem.asset.AppendF("TesseraHub-{}.zip", TesseraHub.Catalog.Platform == "windows" ? "Windows" : (TesseraHub.Catalog.Platform == "macos" ? "Mac" : "Linux"));
+			hubItem.asset.AppendF("TallowManager-{}.zip", TallowManager.Catalog.Platform == "windows" ? "Windows" : (TallowManager.Catalog.Platform == "macos" ? "Mac" : "Linux"));
 			hub = new Release();
 			if (!Releases.Latest(hubItem, betas, hub, scope .()) || hub.tag == HubVersion)
 				DeleteAndNullify!(hub);
@@ -440,7 +440,7 @@ static class Library
 		Path.GetFileName(release.assetUrl, asset);
 		let file = scope $"{Machine.DataFolder}/downloads/{asset}";
 		Directory.CreateDirectory(scope $"{Machine.DataFolder}/downloads").IgnoreError();
-		if (!task.Download(release.assetUrl, file, "Downloading the new Tessera Hub"))
+		if (!task.Download(release.assetUrl, file, "Downloading the new Tallow Hub"))
 			return false;
 		let error = scope String();
 		if (!Releases.Verify(release, file, asset, error))
@@ -448,10 +448,10 @@ static class Library
 		let unpacked = scope $"{Machine.DataFolder}/hub-update";
 		if (Directory.Exists(unpacked))
 			Directory.DelTree(unpacked).IgnoreError();
-		if (!task.Unpack(file, unpacked, "Unpacking the new Tessera Hub"))
+		if (!task.Unpack(file, unpacked, "Unpacking the new Tallow Hub"))
 			return false;
 		File.Delete(file).IgnoreError();
-		// The zip holds one folder (TesseraHub-Linux/...).
+		// The zip holds one folder (TallowManager-Linux/...).
 		let source = scope String(unpacked);
 		for (let entry in Directory.EnumerateDirectories(unpacked))
 		{
@@ -461,7 +461,7 @@ static class Library
 		}
 		let target = scope String();
 		HubFolder(target);
-		task.SetStatus("Installing the new Tessera Hub", 1);
+		task.SetStatus("Installing the new Tallow Hub", 1);
 		for (let entry in Directory.EnumerateFiles(source))
 		{
 			let name = scope String();
@@ -479,7 +479,7 @@ static class Library
 			}
 		}
 #if !BF_PLATFORM_WINDOWS
-		Machine.Run(scope $"chmod +x \"{target}/TesseraHub\"");
+		Machine.Run(scope $"chmod +x \"{target}/TallowManager\"");
 #endif
 		Directory.DelTree(unpacked).IgnoreError();
 		return true;
@@ -491,9 +491,9 @@ static class Library
 		let folder = scope String();
 		HubFolder(folder);
 #if BF_PLATFORM_WINDOWS
-		Machine.Start(scope $"{folder}/TesseraHub.exe");
+		Machine.Start(scope $"{folder}/TallowManager.exe");
 #else
-		Machine.Start(scope $"{folder}/TesseraHub");
+		Machine.Start(scope $"{folder}/TallowManager");
 #endif
 	}
 

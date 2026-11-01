@@ -1,8 +1,8 @@
 using System;
 using System.IO;
-using Tessera;
+using Tallow;
 
-namespace TesseraHub;
+namespace TallowManager;
 
 /// Standalone manager controller. Uses the same UI runtime and artwork as Hub.
 [Component]
@@ -127,9 +127,9 @@ class EngineManagerUi : Component
 		mRelease.CopyTo(selected);
 		let root = new String(mInstallPath);
 #if BF_PLATFORM_WINDOWS
-		let asset = new String("Tessera-Windows.zip");
+		let asset = new String("Tallow-Windows.zip");
 #else
-		let asset = new String("Tessera-Linux.zip");
+		let asset = new String("Tallow-Linux.zip");
 #endif
 		mTask = new Task("Installing Tallow", "engine", new [=](task) =>
 			{

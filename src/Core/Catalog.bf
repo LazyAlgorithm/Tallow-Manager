@@ -1,8 +1,8 @@
 using System;
 using System.Collections;
-using Tessera;
+using Tallow;
 
-namespace TesseraHub;
+namespace TallowManager;
 
 /// What the Hub offers: games and the engine (Items), and the tools some of them need (Dependencies). Read from
 /// catalog.json, which lives in the Hub's repository and is fetched when the Hub starts (a copy is built in, for

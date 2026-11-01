@@ -1,9 +1,9 @@
 using System;
 using System.Collections;
 using System.IO;
-using Tessera;
+using Tallow;
 
-namespace TesseraHub;
+namespace TallowManager;
 
 /// Checks for and installs the tools catalog items need (Catalog.Dependency): any check passing means a tool is
 /// present; installing runs its steps for this platform. Everything here blocks, so the Hub runs it on a thread
