@@ -16,6 +16,12 @@ static class Dependencies
 		if (!dependency.applies)
 			return true;
 #if BF_PLATFORM_WINDOWS
+		// Existing managed Beef installs may predate the corlib search-path configuration.
+		let managedBeef = scope $"{Machine.ToolsFolder}/beef";
+		let beefConfig = scope $"{managedBeef}/bin/BeefConfig.toml";
+		if (File.Exists(scope $"{managedBeef}/bin/BeefBuild.exe") &&
+			Directory.Exists(scope $"{managedBeef}/BeefLibs") && !File.Exists(beefConfig))
+			File.WriteAllText(beefConfig, "Version = 1\nUnversionedLibDirs = [\"../BeefLibs\"]\n").IgnoreError();
 		// Reuse a registered installation and repair only the managed compiler's settings.
 		if (dependency.id == "microsoft-libraries" && !Application.Instance.HasArg("--dependencycheck") && File.Exists(scope $"{Machine.ToolsFolder}/beef/bin/BeefBuild.exe"))
 		{
