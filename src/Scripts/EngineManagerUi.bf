@@ -165,7 +165,9 @@ class EngineManagerUi : Component
 		for (let installed in mInstalled.children)
 		{
 			let installedBuild = installed.attributes.Get("tag");
-			if (!installedBuild.IsEmpty && release.tag.Contains(installedBuild))
+			let installedVersion = installed.attributes.Get("version");
+			if ((!installedVersion.IsEmpty && release.tag == installedVersion) ||
+				(!installedBuild.IsEmpty && release.tag.Contains(installedBuild)))
 			{
 				Find("primary").visible = false;
 				Find("factinstalled").SetText("Installed");
@@ -191,6 +193,19 @@ class EngineManagerUi : Component
 	void OnInstall()
 	{
 		if (mTask != null) return;
+		for (let installed in mInstalled.children)
+		{
+			let version = installed.attributes.Get("version");
+			let build = installed.attributes.Get("tag");
+			if (mRelease != null && ((!version.IsEmpty && mRelease.tag == version) ||
+				(!build.IsEmpty && mRelease.tag.Contains(build))))
+			{
+				OnSelectVersion(installed);
+				Find("message").visible = true;
+				Find("message").SetText("This engine version is already installed. Select Launch Engine or Uninstall.");
+				return;
+			}
+		}
 		if (mRelease == null)
 		{
 			Find("message").visible = true;
@@ -297,6 +312,7 @@ class EngineManagerUi : Component
 				entry.attributes.Remove("id");
 				entry.attributes.Set("path", path);
 				entry.attributes.Set("tag", build.text);
+				entry.attributes.Set("version", version.text);
 				entry.parent = mInstalled;
 				mInstalled.children.Add(entry);
 				for (let child in entry.children)
@@ -326,7 +342,7 @@ class EngineManagerUi : Component
 		mSelectedTag.Set(source.attributes.Get("tag"));
 		Find("title").SetText("Tallow Engine");
 		let label = scope String();
-		ShortVersion(mSelectedTag, label);
+		ShortVersion(source.attributes.Get("version"), label);
 		Find("factversion").SetText(label);
 		Find("factinstalled").SetText("Installed");
 		Find("launchbutton").visible = true;
@@ -374,14 +390,31 @@ class EngineManagerUi : Component
 	void OnUninstall()
 	{
 		if (mTask != null || mSelectedPath.IsEmpty) return;
-		if (Directory.DelTree(mSelectedPath) case .Err)
+		let deletedPath = scope String(mSelectedPath);
+		let parent = scope String();
+		Path.GetDirectoryPath(deletedPath, parent).IgnoreError();
+		if (Directory.DelTree(deletedPath) case .Err || Directory.Exists(deletedPath))
 		{
 			Find("message").visible = true;
 			Find("message").SetText("Could not remove the engine. Close it and try again.");
 			return;
 		}
+		// Remove the empty version directory too; never remove another installed build.
+		if (!parent.IsEmpty && Directory.Exists(parent))
+		{
+			bool containsBuilds = false;
+			for (let remaining in Directory.EnumerateDirectories(parent))
+			{
+				containsBuilds = true;
+				break;
+			}
+			if (!containsBuilds)
+				Directory.DelTree(parent).IgnoreError();
+		}
 		mSelectedPath.Clear();
 		mSelectedTag.Clear();
+		Find("message").visible = true;
+		Find("message").SetText("Engine version uninstalled. Shared development tools were kept.");
 		Find("launchbutton").visible = false;
 		Find("removebutton").visible = false;
 		Find("folderbutton").visible = false;
