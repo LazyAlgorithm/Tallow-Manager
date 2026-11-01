@@ -7,7 +7,7 @@
       "name": "Tallow",
       "beta": true,
       "summary": "Tallow engine and editor, installed side by side with project versions pinned.",
-      "repo": "LazyAlgorithm/Tessera",
+      "repo": "LazyAlgorithm/Tallow",
       "tagPrefix": "build-",
       "assets": {
         "windows": "Tallow-Windows.zip",
@@ -57,13 +57,13 @@
       "install": {
         "windows": [
           {
-            "download": "https://github.com/LazyAlgorithm/Tessera/releases/download/toolchain-2/beef-windows-x64.zip",
+            "download": "https://github.com/LazyAlgorithm/Tallow/releases/download/toolchain-2/beef-windows-x64.zip",
             "unpack": "{tools}"
           }
         ],
         "linux": [
           {
-            "download": "https://github.com/LazyAlgorithm/Tessera/releases/download/toolchain-2/beef-linux-x64.tar.gz",
+            "download": "https://github.com/LazyAlgorithm/Tallow/releases/download/toolchain-2/beef-linux-x64.tar.gz",
             "unpack": "{tools}"
           }
         ]
@@ -91,13 +91,13 @@
       "install": {
         "windows": [
           {
-            "download": "https://github.com/LazyAlgorithm/Tessera/releases/download/toolchain-2/python-windows-x64.zip",
+            "download": "https://github.com/LazyAlgorithm/Tallow/releases/download/toolchain-2/python-windows-x64.zip",
             "unpack": "{tools}"
           }
         ],
         "linux": [
           {
-            "download": "https://github.com/LazyAlgorithm/Tessera/releases/download/toolchain-2/python-linux-x64.tar.gz",
+            "download": "https://github.com/LazyAlgorithm/Tallow/releases/download/toolchain-2/python-linux-x64.tar.gz",
             "unpack": "{tools}"
           }
         ]
