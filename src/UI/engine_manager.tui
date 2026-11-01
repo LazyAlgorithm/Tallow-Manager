@@ -12,6 +12,10 @@
 		<text class="section">AVAILABLE RELEASES</text>
 		<panel id="availableversions" class="list" />
 		<panel class="grow" />
+		<panel id="managerupdate" class="hubupdate" onclick="OnUpdateManager">
+			<text class="hubupdatetitle">Manager update available</text>
+			<text id="managerupdatetext" class="hubupdatetext">Update and restart</text>
+		</panel>
 		<panel id="settingsentry" class="navlink" onclick="OnShowSettings">
 			<text class="navlinktext">Settings</text>
 		</panel>
