@@ -14,6 +14,7 @@
 .list { gap: 4; padding: 0 10 }
 
 .entry { flex-direction: row; align-items: center; gap: 12; height: 60; padding: 0 12; border-radius: 8; background-color: #00000000 }
+.compact { height: 38 }
 .entryicon { width: 40; height: 40 }
 .entrytext { gap: 3; flex-grow: 1 }
 .entryname { font-size: 16; color: #e8eef6 }

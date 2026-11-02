@@ -40,6 +40,17 @@ static class Releases
 	/// The newest release of item that has a file for this platform. With betas false, pre-releases are passed over.
 	public static bool Latest(Catalog.Item item, bool betas, Release result, String error)
 	{
+		let results = scope List<Release>();
+		defer { ClearAndDeleteItems!(results); }
+		if (!All(item, betas, 1, results, error))
+			return false;
+		results[0].CopyTo(result);
+		return true;
+	}
+
+	/// Up to limit releases of item that have a file for this platform, newest first. False if there are none.
+	public static bool All(Catalog.Item item, bool betas, int limit, List<Release> results, String error)
+	{
 		let text = scope String();
 		if (!Http.GetText(scope $"https://api.github.com/repos/{item.repo}/releases?per_page=30", text, error))
 			return false;
@@ -54,46 +65,60 @@ static class Releases
 		}
 		for (let release in root.items)
 		{
-			if (Flag(release, "draft"))
-				continue;
-			let tag = Text(release, "tag_name");
-			if (!item.tagPrefix.IsEmpty && !tag.StartsWith(item.tagPrefix))
-				continue;
-			let prerelease = Flag(release, "prerelease");
-			if (prerelease && !betas)
-				continue;
-			let assets = release["assets"];
-			if (assets == null)
-				continue;
-			bool found = false;
-			result.sumsUrl.Clear();
-			for (let asset in assets.items)
-			{
-				let name = Text(asset, "name");
-				if (name == item.asset)
-				{
-					result.assetUrl.Set(Text(asset, "browser_download_url"));
-					let size = asset["size"];
-					result.assetSize = size != null ? size.AsInteger : 0;
-					found = true;
-				}
-				else if (name.StartsWith("SHA256SUMS"))
-					result.sumsUrl.Set(Text(asset, "browser_download_url"));
-			}
-			if (!found)
-				continue;
-			result.tag.Set(tag);
-			result.name.Set(Text(release, "name"));
-			if (result.name.IsEmpty)
-				result.name.Set(tag);
-			result.beta = prerelease;
-			result.notes.Set(Text(release, "body"));
-			let published = Text(release, "published_at");
-			result.date.Set(published.Length >= 10 ? published.Substring(0, 10) : published);
-			return true;
+			if (results.Count >= limit)
+				break;
+			let result = new Release();
+			if (Read(item, betas, release, result))
+				results.Add(result);
+			else
+				delete result;
 		}
-		error.Set(betas ? "There is no release for this computer yet." : "There is no release for this computer yet that is not a beta.");
-		return false;
+		if (results.IsEmpty)
+		{
+			error.Set(betas ? "There is no release for this computer yet." : "There is no release for this computer yet that is not a beta.");
+			return false;
+		}
+		return true;
+	}
+
+	static bool Read(Catalog.Item item, bool betas, SaveNode release, Release result)
+	{
+		if (Flag(release, "draft"))
+			return false;
+		let tag = Text(release, "tag_name");
+		if (!item.tagPrefix.IsEmpty && !tag.StartsWith(item.tagPrefix))
+			return false;
+		let prerelease = Flag(release, "prerelease");
+		if (prerelease && !betas)
+			return false;
+		let assets = release["assets"];
+		if (assets == null)
+			return false;
+		bool found = false;
+		for (let asset in assets.items)
+		{
+			let name = Text(asset, "name");
+			if (name == item.asset)
+			{
+				result.assetUrl.Set(Text(asset, "browser_download_url"));
+				let size = asset["size"];
+				result.assetSize = size != null ? size.AsInteger : 0;
+				found = true;
+			}
+			else if (name.StartsWith("SHA256SUMS"))
+				result.sumsUrl.Set(Text(asset, "browser_download_url"));
+		}
+		if (!found)
+			return false;
+		result.tag.Set(tag);
+		result.name.Set(Text(release, "name"));
+		if (result.name.IsEmpty)
+			result.name.Set(tag);
+		result.beta = prerelease;
+		result.notes.Set(Text(release, "body"));
+		let published = Text(release, "published_at");
+		result.date.Set(published.Length >= 10 ? published.Substring(0, 10) : published);
+		return true;
 	}
 
 	/// Checks a downloaded file against the release's SHA256SUMS. True if it matches, or the release has no sums.

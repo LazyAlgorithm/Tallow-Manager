@@ -11,7 +11,11 @@ class EngineManagerUi : Component
 {
 	UIDocument mDocument;
 	UIElement mInstalled, mAvailable, mTemplate, mDialog;
-	Release mRelease ~ delete _;
+	/// How many of the newest releases are offered; older ones only appear once installed.
+	const int ShownReleases = 5;
+	List<Release> mReleases = new .() ~ DeleteContainerAndItems!(_);
+	/// The one the page shows, from mReleases.
+	Release mRelease;
 	Task mTask ~ delete _;
 	String mError = new .() ~ delete _;
 	String mInstallPath = new .() ~ delete _;
@@ -20,6 +24,8 @@ class EngineManagerUi : Component
 	bool mDialogTools;
 	List<Catalog.Dependency> mMissingTools = new .() ~ delete _;
 	bool mChecking;
+	String mTestInstall ~ delete _;
+	bool mTestStarted;
 	bool mReady;
 
 	public override void Start()
@@ -58,7 +64,11 @@ class EngineManagerUi : Component
 			mReady = true;
 			RefreshInstalled();
 			CheckReleases();
-			CheckManagerUpdate();
+			let test = scope String();
+			if (Application.Instance.GetArg("--install-test", test))
+				mTestInstall = new String(test);
+			else
+				CheckManagerUpdate();
 		}
 		if (mTask != null)
 		{
@@ -99,9 +109,35 @@ class EngineManagerUi : Component
 				{
 					// The engine archive may have been installed before dependency setup failed.
 					RefreshInstalled();
-					CheckReleases();
+					ShowReleases();
 				}
 			}
+		}
+		if (mTestInstall != null && mTask == null && !mReleases.IsEmpty)
+			RunInstallTest();
+	}
+
+	/// --install-test TAG: installs that release as the button does, then lists what is shown and quits.
+	void RunInstallTest()
+	{
+		if (mTestStarted)
+		{
+			for (let entry in mInstalled.children)
+				Console.WriteLine(scope $"MANAGER_INSTALLED,{entry.attributes.Get("version")}");
+			for (let entry in mAvailable.children)
+				Console.WriteLine(scope $"MANAGER_AVAILABLE,{entry.attributes.Get("release")}");
+			Console.WriteLine(scope $"MANAGER_MESSAGE,{mError}");
+			Application.Instance.Running = false;
+			return;
+		}
+		mTestStarted = true;
+		for (let entry in mAvailable.children)
+		{
+			if (entry.attributes.Get("release") != mTestInstall) continue;
+			OnSelectVersion(entry);
+			mDialogTools = false;
+			OnDialogConfirm();
+			return;
 		}
 	}
 
@@ -137,21 +173,82 @@ class EngineManagerUi : Component
 	{
 		let item = Library.Catalog.FindItem("tallow");
 		if (item == null) return;
-		let release = new Release();
+		let releases = scope List<Release>();
 		let error = scope String();
-		if (!Releases.Latest(item, true, release, error))
+		if (!Releases.All(item, true, ShownReleases, releases, error))
 		{
-			delete release;
 			Find("message").visible = true;
 			Find("message").SetText(error);
 			return;
 		}
-		DeleteAndNullify!(mRelease);
+		mRelease = null;
+		ClearAndDeleteItems!(mReleases);
+		mReleases.AddRange(releases);
+		ShowReleases();
+	}
+
+	/// The installed entry for tag, if that release is installed.
+	UIElement InstalledEntry(StringView tag)
+	{
+		for (let installed in mInstalled.children)
+		{
+			let version = installed.attributes.Get("version");
+			let build = installed.attributes.Get("tag");
+			if ((!version.IsEmpty && tag == version) || (!build.IsEmpty && tag.Contains(build)))
+				return installed;
+		}
+		return null;
+	}
+
+	/// Lists what is not installed yet, and opens the newest release.
+	void ShowReleases()
+	{
+		mRelease = null;
+		Clear(mAvailable);
+		for (let release in mReleases)
+		{
+			if (InstalledEntry(release.tag) != null)
+				continue;
+			let shortTag = scope String();
+			ShortVersion(release.tag, shortTag);
+			let entry = mTemplate.Clone();
+			entry.attributes.Remove("id");
+			entry.attributes.Set("release", release.tag);
+			entry.parent = mAvailable;
+			mAvailable.children.Add(entry);
+			for (let child in entry.children)
+			{
+				if (child.HasClass("entrybadge")) child.visible = release.beta;
+				if (!child.HasClass("entrytext")) continue;
+				for (let label in child.children)
+				{
+					if (label.HasClass("entryname")) label.SetText(shortTag);
+					if (label.HasClass("entrystate")) label.SetText("Available");
+				}
+			}
+		}
+		FitLists();
+		if (mReleases.IsEmpty) return;
+		let newest = InstalledEntry(mReleases[0].tag);
+		if (newest != null)
+		{
+			Find("notes").SetText(mReleases[0].notes);
+			OnSelectVersion(newest);
+		}
+		else
+			ShowRelease(mReleases[0]);
+	}
+
+	void ShowRelease(Release release)
+	{
 		mRelease = release;
+		mSelectedPath.Clear();
+		mSelectedTag.Clear();
 		Find("title").SetText("Tallow Engine");
-		let shortTag = scope String();
-		ShortVersion(release.tag, shortTag);
-		Find("factversion").SetText(shortTag);
+		let label = scope String();
+		ShortVersion(release.tag, label);
+		Find("factversion").SetText(label);
+		Find("factinstalled").SetText("Not installed");
 		Find("factbuild").SetText("Verified during installation");
 		Find("notes").SetText(release.notes);
 		Find("primary").SetText("INSTALL VERSION");
@@ -159,53 +256,18 @@ class EngineManagerUi : Component
 		Find("launchbutton").visible = false;
 		Find("folderbutton").visible = false;
 		Find("removebutton").visible = false;
-		mSelectedPath.Clear();
-		mSelectedTag.Clear();
-		Find("factinstalled").SetText("Not installed");
-		Clear(mAvailable);
-		for (let installed in mInstalled.children)
-		{
-			let installedBuild = installed.attributes.Get("tag");
-			let installedVersion = installed.attributes.Get("version");
-			if ((!installedVersion.IsEmpty && release.tag == installedVersion) ||
-				(!installedBuild.IsEmpty && release.tag.Contains(installedBuild)))
-			{
-				Find("primary").visible = false;
-				Find("factinstalled").SetText("Installed");
-				OnSelectVersion(installed);
-				return;
-			}
-		}
-		let entry = mTemplate.Clone();
-		entry.attributes.Remove("id");
-		entry.parent = mAvailable;
-		mAvailable.children.Add(entry);
-		for (let child in entry.children)
-		{
-			if (!child.HasClass("entrytext")) continue;
-			for (let label in child.children)
-			{
-				if (label.HasClass("entryname")) label.SetText(shortTag);
-				if (label.HasClass("entrystate")) label.SetText("Available");
-			}
-		}
 	}
 
 	void OnInstall()
 	{
 		if (mTask != null) return;
-		for (let installed in mInstalled.children)
+		let already = mRelease != null ? InstalledEntry(mRelease.tag) : null;
+		if (already != null)
 		{
-			let version = installed.attributes.Get("version");
-			let build = installed.attributes.Get("tag");
-			if (mRelease != null && ((!version.IsEmpty && mRelease.tag == version) ||
-				(!build.IsEmpty && mRelease.tag.Contains(build))))
-			{
-				OnSelectVersion(installed);
-				Find("message").visible = true;
-				Find("message").SetText("This engine version is already installed. Select Launch Engine or Uninstall.");
-				return;
-			}
+			OnSelectVersion(already);
+			Find("message").visible = true;
+			Find("message").SetText("This engine version is already installed. Select Launch Engine or Uninstall.");
+			return;
 		}
 		if (mRelease == null)
 		{
@@ -338,6 +400,39 @@ class EngineManagerUi : Component
 				delete manifest;
 			}
 		}
+		mInstalled.children.Sort(scope (a, b) => CompareVersions(b.attributes.Get("version"), a.attributes.Get("version")));
+	}
+
+	/// Orders "v0.1.9-beta" before "v0.1.10-beta": runs of digits compare as numbers.
+	static int CompareVersions(StringView a, StringView b)
+	{
+		int i = 0, j = 0;
+		while (i < a.Length && j < b.Length)
+		{
+			if (!a[i].IsDigit || !b[j].IsDigit)
+			{
+				if (a[i] != b[j]) return a[i] <=> b[j];
+				i++;
+				j++;
+				continue;
+			}
+			int left = 0, right = 0;
+			while (i < a.Length && a[i].IsDigit) left = left * 10 + (a[i++] - '0');
+			while (j < b.Length && b[j].IsDigit) right = right * 10 + (b[j++] - '0');
+			if (left != right) return left <=> right;
+		}
+		return (a.Length - i) <=> (b.Length - j);
+	}
+
+	/// The sidebar does not scroll, so a long list takes less room.
+	void FitLists()
+	{
+		let compact = mInstalled.children.Count + mAvailable.children.Count > 6;
+		for (let list in UIElement[2](mInstalled, mAvailable))
+		{
+			for (let entry in list.children)
+				entry.SetClass("compact", compact);
+		}
 	}
 
 	void OnSelectVersion(UIElement source)
@@ -349,24 +444,17 @@ class EngineManagerUi : Component
 		{
 			// Available releases use the same entry template as installed versions.
 			// Selecting one must clear the previous installation selection.
-			if (mRelease == null) return;
-			mSelectedPath.Clear();
-			mSelectedTag.Clear();
-			Find("title").SetText("Tallow Engine");
-			let label = scope String();
-			ShortVersion(mRelease.tag, label);
-			Find("factversion").SetText(label);
-			Find("factinstalled").SetText("Not installed");
-			Find("factbuild").SetText("Verified during installation");
-			Find("notes").SetText(mRelease.notes);
-			Find("primary").SetText("INSTALL VERSION");
-			Find("primary").visible = true;
-			Find("launchbutton").visible = false;
-			Find("folderbutton").visible = false;
-			Find("removebutton").visible = false;
-			Find("message").visible = false;
+			let tag = source.attributes.Get("release");
+			for (let release in mReleases)
+			{
+				if (release.tag != tag) continue;
+				ShowRelease(release);
+				Find("message").visible = false;
+				break;
+			}
 			return;
 		}
+		mRelease = null;
 		mSelectedPath.Set(path);
 		mSelectedTag.Set(source.attributes.Get("tag"));
 		Find("title").SetText("Tallow Engine");
@@ -449,6 +537,6 @@ class EngineManagerUi : Component
 		Find("folderbutton").visible = false;
 		Find("primary").visible = true;
 		RefreshInstalled();
-		CheckReleases();
+		ShowReleases();
 	}
 }
