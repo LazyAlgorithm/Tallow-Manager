@@ -11,8 +11,9 @@ class EngineManagerUi : Component
 {
 	UIDocument mDocument;
 	UIElement mInstalled, mAvailable, mTemplate, mDialog;
-	/// How many of the newest releases are offered; older ones only appear once installed.
-	const int ShownReleases = 5;
+	/// How many of the newest releases of each version series (0.1.x, 0.2.x...) are offered; older ones only appear
+	/// once installed.
+	const int ShownPerSeries = 3;
 	List<Release> mReleases = new .() ~ DeleteContainerAndItems!(_);
 	/// The one the page shows, from mReleases.
 	Release mRelease;
@@ -175,7 +176,7 @@ class EngineManagerUi : Component
 		if (item == null) return;
 		let releases = scope List<Release>();
 		let error = scope String();
-		if (!Releases.All(item, true, ShownReleases, releases, error))
+		if (!Releases.BySeries(item, true, ShownPerSeries, releases, error))
 		{
 			Find("message").visible = true;
 			Find("message").SetText(error);

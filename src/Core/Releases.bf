@@ -81,6 +81,118 @@ static class Releases
 		return true;
 	}
 
+	/// The newest perSeries releases of each version series ("v0.1.x", "v0.2.x"...) that have a file for this
+	/// platform: the series newest first, each newest first. Reads up to three pages of 100, so that an older series
+	/// stays listed while a newer one is released often. False if there are none.
+	public static bool BySeries(Catalog.Item item, bool betas, int perSeries, List<Release> results, String error)
+	{
+		Dictionary<String, int> counts = scope .();
+		defer
+		{
+			for (let key in counts.Keys)
+				delete key;
+		}
+		for (int page = 1; page <= 3; page++)
+		{
+			let text = scope String();
+			if (!Http.GetText(scope $"https://api.github.com/repos/{item.repo}/releases?per_page=100&page={page}" , text, error))
+			{
+				if (page == 1)
+					return false;
+				break;
+			}
+			let root = SaveNode.FromText(text);
+			defer delete root;
+			if (root == null || root.kind != .List)
+			{
+				if (page > 1)
+					break;
+				let message = root?["message"];
+				error.Set(message != null && message.kind == .String ? message.text : "GitHub sent an answer the Hub does not understand.");
+				return false;
+			}
+			for (let release in root.items)
+			{
+				let result = new Release();
+				if (!Read(item, betas, release, result))
+				{
+					delete result;
+					continue;
+				}
+				let series = Series(result.tag, .. scope .());
+				if (counts.TryGetValue(series, let count))
+				{
+					if (count >= perSeries)
+					{
+						delete result;
+						continue;
+					}
+					counts[series] = count + 1;
+				}
+				else
+					counts[new .(series)] = 1;
+				results.Add(result);
+			}
+			if (root.items.Count < 100)
+				break;
+		}
+		if (results.IsEmpty)
+		{
+			error.Set(betas ? "There is no release for this computer yet." : "There is no release for this computer yet that is not a beta.");
+			return false;
+		}
+		results.Sort(scope (a, b) => CompareVersions(b.tag, a.tag));
+		return true;
+	}
+
+	/// "v0.2.14-beta" is in series "0.2"; a tag without a version is a series of its own.
+	public static void Series(StringView tag, String output)
+	{
+		int[3] parts = default;
+		if (Parts(tag, ref parts) < 2)
+		{
+			output.Set(tag);
+			return;
+		}
+		output.AppendF("{}.{}", parts[0], parts[1]);
+	}
+
+	/// Compares two tags by their version numbers (v0.2.3 is newer than v0.1.52); tags without one sort by text.
+	public static int CompareVersions(StringView a, StringView b)
+	{
+		int[3] left = default, right = default;
+		let leftCount = Parts(a, ref left), rightCount = Parts(b, ref right);
+		if (leftCount == 0 || rightCount == 0)
+			return leftCount != rightCount ? leftCount <=> rightCount : a.CompareTo(b);
+		for (int i < 3)
+		{
+			if (left[i] != right[i])
+				return left[i] <=> right[i];
+		}
+		return 0;
+	}
+
+	/// Reads up to three dot-separated numbers after an optional "v"; returns how many.
+	static int Parts(StringView tag, ref int[3] parts)
+	{
+		var text = tag;
+		if (text.StartsWith('v') || text.StartsWith('V'))
+			text = text.Substring(1);
+		int count = 0, i = 0;
+		while (count < 3 && i < text.Length && text[i].IsDigit)
+		{
+			int value = 0;
+			while (i < text.Length && text[i].IsDigit)
+				value = value * 10 + ((int)text[i++] - (int)'0');
+			parts[count++] = value;
+			if (i < text.Length && text[i] == '.')
+				i++;
+			else
+				break;
+		}
+		return count;
+	}
+
 	static bool Read(Catalog.Item item, bool betas, SaveNode release, Release result)
 	{
 		if (Flag(release, "draft"))
