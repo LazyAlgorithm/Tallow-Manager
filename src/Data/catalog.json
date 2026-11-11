@@ -111,7 +111,7 @@
         ],
         "linux": [
           {
-            "download": "https://github.com/LazyAlgorithm/Tallow/releases/download/v0.1.0-beta/python-linux-x64.tar.gz",
+            "download": "https://github.com/astral-sh/python-build-standalone/releases/download/20261013/cpython-3.12.15%2B20261013-x86_64-unknown-linux-gnu-install_only.tar.gz",
             "unpack": "{tools}"
           }
         ]
