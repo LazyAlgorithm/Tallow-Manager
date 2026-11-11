@@ -17,20 +17,29 @@ runs:
           libgl-dev libegl-dev libasound2-dev libpulse-dev libwayland-dev libxkbcommon-dev \
           libtinfo5 libxml2 zlib1g-dev libzstd-dev
 
+    # BeefBuild links with clang and lld; the packaged compiler carries LLVM's libraries but not those programs.
+    - name: Install clang and lld
+      shell: bash
+      run: |
+        wget -q https://apt.llvm.org/llvm.sh
+        sudo bash llvm.sh "${{ inputs.llvm-version }}"
+        sudo apt-get install -y --no-install-recommends "clang-${{ inputs.llvm-version }}" "lld-${{ inputs.llvm-version }}"
+        for tool in clang clang++ ld.lld; do sudo ln -sf "/usr/lib/llvm-${{ inputs.llvm-version }}/bin/$tool" "/usr/local/bin/$tool"; done
+
     - name: Cache the published Beef compiler
       id: beef-cache
       uses: actions/cache@v4
       with:
         path: ~/beef
-        key: beef-toolchain-2-c3c90b0dc239-jammy
+        key: beef-v0.1.0-beta-a73564697836-jammy
 
     - name: Get the verified compiler
       if: steps.beef-cache.outputs.cache-hit != 'true'
       shell: bash
       run: |
         curl --fail --location --retry 3 -o "$RUNNER_TEMP/beef.tar.gz" \
-          https://github.com/LazyAlgorithm/Tallow/releases/download/toolchain-2/beef-linux-x64.tar.gz
-        echo "c3c90b0dc239262c08ef88de61b00c896afe11219c08c97d8975884b4ed17131  $RUNNER_TEMP/beef.tar.gz" | sha256sum --check
+          https://github.com/LazyAlgorithm/Tallow/releases/download/v0.1.0-beta/beef-linux-x64.tar.gz
+        echo "a73564697836e472618b86f94413e4557455e5ccda206780149113d8bb17c5bd  $RUNNER_TEMP/beef.tar.gz" | sha256sum --check
         tar -xzf "$RUNNER_TEMP/beef.tar.gz" -C "$HOME"
 
     - name: Select the packaged compiler
