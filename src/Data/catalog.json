@@ -39,7 +39,7 @@
       "found": [
         {
           "command": {
-            "linux": "sh -c 'for exe in \"$(command -v BeefBuild 2>/dev/null)\" \"$(command -v BeefBuild.sh 2>/dev/null)\" \"$HOME/Beef/IDE/dist/BeefBuild.sh\" \"$HOME/beef/IDE/dist/BeefBuild.sh\" \"$HOME/dev/Beef/IDE/dist/BeefBuild.sh\" \"$HOME/dev/beef/IDE/dist/BeefBuild.sh\" /opt/beef/IDE/dist/BeefBuild.sh /opt/Beef/IDE/dist/BeefBuild.sh; do if [ -n \"$exe\" ] && [ -f \"$exe\" ] && [ -x \"$exe\" ]; then exit 0; fi; done; exit 1'"
+            "linux": "sh -c 'for exe in \"$(command -v BeefBuild 2>/dev/null)\" \"$(command -v BeefBuild.sh 2>/dev/null)\"; do if [ -n \"$exe\" ] && [ -x \"$exe\" ]; then exit 0; fi; done; for dir in \"$HOME/Beef\" \"$HOME/beef\" \"$HOME/dev/Beef\" \"$HOME/dev/beef\" /opt/beef /opt/Beef; do if [ -f \"$dir/BeefLibs/corlib/BeefProj.toml\" ] && { [ -x \"$dir/IDE/dist/BeefBuild\" ] || [ -x \"$dir/IDE/dist/BeefBuild.sh\" ]; }; then exit 0; fi; done; exit 1'"
           }
         },
         {
