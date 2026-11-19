@@ -13,7 +13,7 @@ class EngineManagerUi : Component
 	UIElement mInstalled, mAvailable, mTemplate, mDialog;
 	/// How many of the newest releases of each version series (0.1.x, 0.2.x...) are offered; older ones only appear
 	/// once installed.
-	const int ShownPerSeries = 3;
+	const int ShownPerSeries = 5;
 	List<Release> mReleases = new .() ~ DeleteContainerAndItems!(_);
 	/// The one the page shows, from mReleases.
 	Release mRelease;
