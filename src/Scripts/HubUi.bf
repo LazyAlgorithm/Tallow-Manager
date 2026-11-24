@@ -529,7 +529,7 @@ class HubUi : Component
 		if ((item.kind == "engine" ? Library.FindInstalled(item.id, mSelectedEngineTag) : Library.FindInstalled(item.id)) != null)
 		{
 			mDialogTools.Clear();
-			Dependencies.Missing(Library.Catalog, item, mDialogTools);
+			Dependencies.Missing(Library.Catalog, item, mDialogTools, (item.kind == "engine") ? (StringView)mSelectedEngineTag : "");
 			if (!mDialogTools.IsEmpty)
 			{
 				mDialogLaunch = true;
@@ -574,7 +574,7 @@ class HubUi : Component
 		if (Library.LatestOf(item.id) == null)
 			return;
 		mDialogTools.Clear();
-		Dependencies.Missing(Library.Catalog, item, mDialogTools);
+		Dependencies.Missing(Library.Catalog, item, mDialogTools, (item.kind == "engine" && !update) ? (StringView)mSelectedEngineTag : "");
 		if (mDialogTools.IsEmpty)
 		{
 			StartInstall(item, update);

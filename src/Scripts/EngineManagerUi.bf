@@ -319,7 +319,7 @@ class EngineManagerUi : Component
 				let required = scope List<Catalog.Dependency>();
 				let item = Library.Catalog.FindItem("tallow");
 				if (item == null) return task.Fail("Installed engine, but toolchain requirements are missing from the catalog.");
-				Dependencies.Missing(Library.Catalog, item, required);
+				Dependencies.Missing(Library.Catalog, item, required, selected.tag);
 				for (let dependency in required)
 				{
 					if (task.Cancelled) return task.Fail("Cancelled. Engine files were installed, but tool setup is incomplete.");
@@ -483,7 +483,7 @@ class EngineManagerUi : Component
 			Machine.Start(program);
 			mMissingTools.Clear();
 			let item = Library.Catalog.FindItem("tallow");
-			if (item != null) Dependencies.Missing(Library.Catalog, item, mMissingTools);
+			if (item != null) Dependencies.Missing(Library.Catalog, item, mMissingTools, mSelectedTag);
 			if (!mMissingTools.IsEmpty)
 			{
 				mDialogTools = true;

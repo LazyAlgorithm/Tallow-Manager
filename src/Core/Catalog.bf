@@ -29,6 +29,10 @@ class Catalog
 		public String icon = new .() ~ delete _;
 		/// Ids of dependencies that must be present before it is installed.
 		public List<String> requires = new .() ~ DeleteContainerAndItems!(_);
+		/// Dependencies only releases older than legacyBefore need, besides requires (Tallow engines before the one
+		/// that needs no Beef compiler or Python). Empty legacyBefore: none.
+		public List<String> legacyRequires = new .() ~ DeleteContainerAndItems!(_);
+		public String legacyBefore = new .() ~ delete _;
 		/// Still in beta: shown with a BETA badge.
 		public bool beta;
 		/// Accent colour for its page ("#e0503a"), and how to show it in the list.
@@ -175,6 +179,11 @@ class Catalog
 			for (int r < (requires != null ? requires.Count : 0))
 				if (requires.items[r].kind == .String)
 					item.requires.Add(new .(requires.items[r].text));
+			let legacy = node["legacyRequires"];
+			for (int r < (legacy != null ? legacy.Count : 0))
+				if (legacy.items[r].kind == .String)
+					item.legacyRequires.Add(new .(legacy.items[r].text));
+			Text(node, "legacyBefore", item.legacyBefore);
 			if (item.id.IsEmpty || item.repo.IsEmpty)
 			{
 				delete item;

@@ -18,7 +18,7 @@ on:
     inputs:
       tallow_ref:
         description: Tallow branch, tag or commit to build with
-        default: main
+        default: 4849fc59ec9f6cd25fc67b361afca1b551c86a95
       publish:
         description: Make a pre-release (otherwise the zips are only attached to the run)
         type: boolean
@@ -28,7 +28,9 @@ permissions:
   contents: write
 
 env:
-  TALLOW_REF: ${{ inputs.tallow_ref || 'main' }}
+  # Manager's gameplay is Beef. Tallow main exports C# games only (Tallow.Build export) and no longer has
+  # tools/build_player.py, so Manager builds with the last Tallow commit that does.
+  TALLOW_REF: ${{ inputs.tallow_ref || '4849fc59ec9f6cd25fc67b361afca1b551c86a95' }}
   BEEF_COMMIT: b62833e327d6b08f3566b31102c57646de6916b0
   LLVM_VERSION: '22'
   NATIVE_TARGETS: tallow_native bgfx bimg bimg_decode bx SDL3-static joltc Jolt enet

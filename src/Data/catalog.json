@@ -18,13 +18,16 @@
         "linux": "Tallow-Linux/Tallow"
       },
       "requires": [
+        "vc-runtime"
+      ],
+      "legacyRequires": [
         "beef",
         "python",
         "microsoft-libraries",
         "linux-build-tools",
-        "lld",
-        "vc-runtime"
+        "lld"
       ],
+      "legacyBefore": "v0.3.41-beta",
       "banner": "",
       "icon": "",
       "accent": "#4cc3f0"

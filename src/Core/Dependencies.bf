@@ -241,10 +241,15 @@ static class Dependencies
 #endif
 	}
 
-	/// The dependencies an item needs that are missing here, with what they bring along, in install order.
-	public static void Missing(Catalog catalog, Catalog.Item item, List<Catalog.Dependency> missing)
+	/// The dependencies an item needs that are missing here, with what they bring along, in install order. tag is
+	/// the release in question (empty: the newest); one older than the item's legacyBefore needs its legacyRequires too.
+	public static void Missing(Catalog catalog, Catalog.Item item, List<Catalog.Dependency> missing, StringView tag = "")
 	{
-		for (let id in item.requires)
+		let ids = scope List<String>();
+		ids.AddRange(item.requires);
+		if (!item.legacyBefore.IsEmpty && !tag.IsEmpty && Releases.CompareVersions(tag, item.legacyBefore) < 0)
+			ids.AddRange(item.legacyRequires);
+		for (let id in ids)
 		{
 			let dependency = catalog.FindDependency(id);
 			if (dependency == null || IsFound(dependency) || missing.Contains(dependency))
